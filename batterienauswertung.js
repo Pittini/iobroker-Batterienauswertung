@@ -107,7 +107,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
         };
     };
 
-    NextExpectedLowBatt = "Wartungshinweis: Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex] + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(Sensor[LowestBattIndex].substring(0, Sensor[LowestBattIndex].lastIndexOf("."))).common.name
+    NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex] + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(Sensor[LowestBattIndex].substring(0, Sensor[LowestBattIndex].lastIndexOf("."))).common.name
     setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt);
     log(NextExpectedLowBatt);
 }
@@ -130,7 +130,7 @@ function CheckAllBatterysOk() {
 function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn getriggert
     if (logging) log("Reaching CheckBatterys(x)");
     if (SensorVal[x] < BatteryMinLimit) { //Wenn Min. Wert unterschritten
-        LastMessage = "Wartungshinweis: Batteriestand niedrig im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
+        LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
         Meldung(LastMessage);
     };
     CheckAllBatterysOk();
@@ -144,7 +144,7 @@ function CheckAllBatterys() { // Prüfung alle Batteriestände bei Skriptstart
         if (SensorVal[x] < BatteryMinLimit) { //Wenn Min. Wert unterschritten
             if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLinmit von " + BatteryMinLimit + " V");
             //setTimeout(function () { //TimeOut damit die Meldung nachkommt wenn mehrere, ohne wird nur der erste angezeigt weil zu schnell
-            LastMessage = LastMessage + "Wartungshinweis: Batteriestand niedrig in " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
+            LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
             //}, 100 * x); //Wert der Schleife mit 100 multiplizieren damit bei jedem Durchlauf der Wert um 100ms erhöht wird
         };
     };
