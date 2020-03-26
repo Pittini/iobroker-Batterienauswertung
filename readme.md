@@ -1,11 +1,15 @@
 # Script um die Batteriestände beliebig vieler Geräte mit gleichem LowLimit zu überwachen
 
-#### Kann beliebige Geräte überwachen welche einen Datenpunkt mit der Batteriespannung zur Verfügung stellen.
-#### Legt vier Datenpunkte an (Summenfeld - AllBatterysOk, Einstellfeld für die LimitSpannung - BatteryMinLimit, die letzte ausgegene Nachricht - LastMessage, sowie Raum und Gerät der Batterie mit aktuell niedrigsten Stand - NextExpectedLowBatt).
+#### Kann beliebige Geräte überwachen welche einen Datenpunkt mit der Batteriespannung zur Verfügung stellen und das gleiche LowLimit haben.
+#### Legt vier Datenpunkte an 
+* **AllBatterysOk** - Summenfeld 
+* **BatteryMinLimit** - Einstellfeld für die LimitSpannung  
+* **LastMessage** - Die letzte ausgegebene Nachricht (Wird autom. gelöscht sobald wieder alle Batterien innerhalb des limits sind) - 
+* **NextExpectedLowBatt** - Raum und Gerät der Batterie mit aktuell niedrigsten Stand 
 #### Möglichkeit eine Meldung/Ansage via Log/Alexa/Telegram auszugeben
 
-# WICHTIG!!!
-### Vorraussetzungen: Den Geräten müssen Räume zugewiesen sein (gesamter Channel), sowie eine Funktion, z.B. "BatterieSpannung" für jeden entsprechenden Datenpunkt welcher die Batteriespannung des Gerätes anzeigt. **Aber hier nur für den Datenpunkt, nicht den gesamten Channel!!!**
+# WICHTIG!!!  
+### **Vorraussetzungen:** Den Geräten müssen Räume zugewiesen sein (gesamter Channel), sowie eine Funktion, z.B. "BatterieSpannung" für jeden entsprechenden Datenpunkt welcher die Batteriespannung des Gerätes anzeigt. **Aber hier nur für den Datenpunkt, nicht den gesamten Channel!!!**  
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
 
 # Installation
