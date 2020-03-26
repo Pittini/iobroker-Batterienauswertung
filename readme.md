@@ -12,6 +12,11 @@
 ### **Vorraussetzungen:** Den Geräten müssen Räume zugewiesen sein (gesamter Channel), sowie eine Funktion, z.B. "BatterieSpannung" für jeden entsprechenden Datenpunkt welcher die Batteriespannung des Gerätes anzeigt. **Aber hier nur für den Datenpunkt, nicht den gesamten Channel!!!**  
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
 
+# Demo Widget für Vis
+viswidget.txt ist eine kleines Demowidget welche die relevanten Infos des Skriptes visualisiert. Es zeigt links ein Batteriesymbol mit grünem Hintergrund, welcher bei Limitunterscheidung rot blinkt. Gleichzeitig wird die im grünen Zustand unsichtbare Lastmessage eingeblendet und blinkt ebenfalls rot. Immer sichtbar ist die Anzeige der vorrausichtlich nächsten Batterie welche leer wird, mit Raum und Geräteangabe. Das ganze ist nur EIN ganz normales String Widget. Es verwendet jedoch das Iconset "Mfd icons as SVG" welches installiert sein sollte, sonst fehlt das Batteriesymbol. Selbstverständlich könnt ihr aber auch andere, eigene Icons eintragen.  
+
+![battok.png](/admin/battok.png) 
+![battalarm.png](/admin/battalarm.png) 
 # Installation
 1. Wenn noch nicht geschehen, allen gewünschten Sensoren einen Raum und eine Funktion zuweisen. Die Funktion muss vorher in den Aufzählungen hinzugefügt werden und könnte z.B. "BatterieSpannung" lauten. Soll ein anderer Begriff verwendet werden, muss dies dann auch im Script, Zeile 10 geändert werden.
 2. Das Skript in ein neues JS Projekt kopieren.
