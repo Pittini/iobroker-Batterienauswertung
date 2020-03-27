@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.3 Stand 26.03.2020
+// Batterieüberwachungsskript Version 1.3.1 Stand 27.03.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte welche das selbe LowLimit haben
 
 //WICHTIG!!!
@@ -35,7 +35,7 @@ for (let x in Funktionen) {        // loop ueber alle Functions
     if (Funktion == WelcheFunktionVerwenden) { //Wenn Function ist WelcheFunktionVerwenden (BatterieSpannung)
         for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
             Sensor[y] = members[y];
-            //if (logging) log(Funktion + ': ' + members[y]);
+            if (logging) log(Funktion + ' found at ' + members[y]);
         };
     };
 };
@@ -120,7 +120,7 @@ function CheckAllBatterysOk() {
         };
     };
     setState(praefix + "AllBatterysOk", AllBatterysOk);
-    if (AllBatterysOk) { 
+    if (AllBatterysOk == true && LastMessage != "") {
         LastMessage = ""; //Lastmessage löschen
         setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage löschen
         if (logging) log("Alle Batterien ok, Lastmessage gelöscht")
@@ -138,7 +138,7 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
 }
 
 function CheckAllBatterys() { // Prüfung alle Batteriestände bei Skriptstart
-    if (logging) log("Reaching CheckAllBatterys() Sensor.length = " + Sensor.length);
+    if (logging) log("Reaching CheckAllBatterys() found " + (Sensor.length + 1) + " Devices");
     //LastMessage = ""
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (SensorVal[x] < BatteryMinLimit) { //Wenn Min. Wert unterschritten
@@ -156,6 +156,7 @@ function CheckAllBatterys() { // Prüfung alle Batteriestände bei Skriptstart
 function GetRoom(x) {  // Raum eines Gerätes ermitteln
     let room = getObject(Sensor[x], 'rooms').enumNames[0];
     if (typeof room == 'object') room = room.de;
+    room = room.replace(/_/g, " "); //Unterstriche durch Leerzeichen ersetzen
     return room;
 };
 
