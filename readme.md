@@ -24,7 +24,7 @@
 viswidget.txt ist ein kleines Demowidget welche die relevanten Infos des Skriptes visualisiert. Es zeigt links ein Batteriesymbol mit grünem Hintergrund, welcher bei Limitunterscheidung rot blinkt. Gleichzeitig wird die im grünen Zustand unsichtbare Lastmessage eingeblendet und blinkt ebenfalls rot. Immer sichtbar ist die Anzeige der vorrausichtlich nächsten Batterie welche leer wird, mit Raum und Geräteangabe. Das ganze ist nur EIN ganz normales String Widget. Es verwendet jedoch das Iconset "Mfd icons as SVG" welches installiert sein sollte, sonst fehlt das Batteriesymbol. Selbstverständlich könnt ihr aber auch andere, eigene Icons eintragen.  
 
 ![battok.png](/admin/battok.png) 
-![battalarm.png](/admin/battalarm.png) 
+![battalarm1.png](/admin/battalarm1.png) 
 
 # Changelog
 
