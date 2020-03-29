@@ -5,7 +5,7 @@
 * **AllBatterysOk** - Summenfeld 
 * **BatteryMinLimit** - Einstellfeld für die LimitSpannung  
 * **LastMessage** - Die letzte ausgegebene Nachricht (Wird autom. gelöscht sobald wieder alle Batterien innerhalb des limits sind) - 
-* **NextExpectedLowBatt** - Raum und Gerät der Batterie mit aktuell niedrigsten Stand 
+* **NextExpectedLowBatt** - Raum und Gerät der Batterie mit aktuell niedrigsten Stand aber noch innerhalb des Limits
 #### Möglichkeit eine Meldung/Ansage via Log/Alexa/Telegram auszugeben
 
 # WICHTIG!!!  
