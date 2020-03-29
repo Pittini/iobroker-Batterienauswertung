@@ -13,7 +13,7 @@
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
 
 # Installation
-1. Wenn noch nicht geschehen, allen gewünschten Sensoren einen Raum und eine Funktion zuweisen. Die Funktion muss vorher in den Aufzählungen hinzugefügt werden und könnte z.B. "BatterieSpannung" lauten. Soll ein anderer Begriff verwendet werden, muss dies dann auch im Script, Zeile 10 geändert werden.
+1. Wenn noch nicht geschehen, allen gewünschten Sensoren einen Raum und eine Funktion zuweisen. Die Funktion muss vorher in den Aufzählungen hinzugefügt werden und könnte z.B. "BatterieSpannung" lauten. Soll ein anderer Begriff verwendet werden, muss dies dann auch im Script, Zeile 10 geändert werden. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es oft hilfreich die JS Instanz neu zu starten da diese bei Aufzählungsänderungen gerne mal "zickt" was dann zu Skriptfehlern führt**.
 2. Das Skript in ein neues JS Projekt kopieren.
 3. Zeile 8-16 kontrollieren und bei Bedarf anpassen
 4. Zeile 11-13 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen.
