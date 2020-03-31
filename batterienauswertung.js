@@ -1,13 +1,13 @@
-// Batterieüberwachungsskript Version 1.3.1 Stand 27.03.2020
-//Überwacht Batteriespannungen beliebig vieler Geräte welche das selbe LowLimit haben
+// Batterieüberwachungsskript Version 1.4 Stand 31.03.2020
+//Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
-//Vorraussetzungen: Den Geräten müssen Räume zugewiesen sein, sowie die Funktion "BatterieSpannung" für jeden entsprechenden Batteriespannungs Datenpunkt zugewiesen sein.
+//Vorraussetzungen: Den Geräten müssen Räume zugewiesen sein, sowie die Funktion "BatterieSpannung_xx" für jeden entsprechenden Batteriespannungs Datenpunkt zugewiesen sein.
 
-//Einstellungen
+//Grund Einstellungen
 const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DPs
 const logging = true; //Logging aktivieren?
-const WelcheFunktionVerwenden = "BatterieSpannung"; // Legt fest nach welchem Begriff in Funktionen gesucht wird.
+const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche welcher für die Batterieüberwachung genutzt wird
 const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
 const UseAlexa = false; // Sollen Nachrichten via Alexa ausgegeben werden?
 const AlexaId = ""; // Die Alexa Seriennummer
@@ -15,42 +15,49 @@ const UseSay = false; // Sollen Nachrichten via Say ausgegeben werden? Funktion 
 const UseEventLog = false; // Sollen Nachrichten ins Eventlog geschreiben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const UsePopUp = false // Soll PopUp angezeigt werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 
+//Tabellen Einstellungen
+const TblOkBgColor = "lightgreen"; //Hintergrundfarbe für Batteriestatus Ok
+const TblInfoBgColor = "khaki"; //Hintergrundfarbe für Batteriestatus Info, also die leerste Batterie welche noch nicht das Limit unterschreitet
+const TblWarnBgColor = "salmon"; //Hintergrundfarbe für Batteriestatus Warnung, also jene Batterie welche unter das Limit kam.
+const HeadBgColor = "dimgrey"; //Hintergrundfarbe des Tabellenkopfes
+const FontColor = "black"; //Textfarbe für Tabelleninhalt
+const HeadFontColor = "white"; //Textfarbe für Tabellenkopf
+
 //Ab hier nix mehr ändern
 
 let DpCount = 0; //Zähler für anzulegende Datenpunkte
 const States = []; //States Array initialisieren
 const Sensor = [] //Sensoren Array initialisieren
-let SensorVal = []; //SensorDatenpunkte Werte Array initialisieren
-let BatteryMinLimit;
+const SensorVal = []; //SensorDatenpunkte Werte Array initialisieren
+const SensorUmax = []; //Sensoren Array Batteriespannungswerte Werte initialisieren
+const SensorUProz = []; //Sensoren Array Spannung in Prozent initialisieren
+const SensorState = []; //Statusarray, mögliche Werte ok,info,warn
+const BatteryMinLimit = [];
+const WelcheFunktionVerwenden = []; // Array mit allen Einträgen aus Funktionen welche den FunktionBaseName beinhalten
 let AllBatterysOk = true;
 let LastMessage = "";
 let LastMessageSeparator = "<br>";
 let NextExpectedLowBatt = "";
 
-let Funktionen = getEnums('functions');
-for (let x in Funktionen) {        // loop ueber alle Functions
-    let Funktion = Funktionen[x].name;
-    if (typeof Funktion == 'object') Funktion = Funktion.de;
-    let members = Funktionen[x].members;
-    if (Funktion == WelcheFunktionVerwenden) { //Wenn Function ist WelcheFunktionVerwenden (BatterieSpannung)
-        for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
-            Sensor[y] = members[y];
-            if (logging) log(Funktion + ' found at ' + members[y]);
-        };
-    };
-};
-
-
-//Struktur anlegen in js.0 um Sollwert und Summenergebniss zu speichern
-//Datenpunkte anlegen 
+//function CreateStates() {
+//Datenpunkte anlegen in javascript.0.BatterieUeberwachung.
 States[DpCount] = { id: praefix + "AllBatterysOk", initial: true, forceCreation: false, common: { read: true, write: true, name: "Alle Batterien Ok?", type: "boolean", role: "state", def: false } }; //
-DpCount++;
-States[DpCount] = { id: praefix + "BatteryMinLimit", initial: 2.6, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung", type: "number", role: "value", unit: "V", def: 2.6 } }; //
 DpCount++;
 States[DpCount] = { id: praefix + "LastMessage", initial: "", forceCreation: false, common: { read: true, write: true, name: "Letzte Warnmeldung", type: "string", role: "state", def: "" } }; //
 DpCount++;
-States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: true, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
+FillWelcheFunktionVerwenden(); //Vorab Funktionen mit Umax Spannungen einlesen da diese für ID und Namen der MinLimit States benötigt werden
 
+for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
+    let dummy = WelcheFunktionVerwenden[x].substr(WelcheFunktionVerwenden[x].length - 2, 2) //Letzten beiden Zeichen aus Funktionsnamen extrahieren
+    let VoltInitial = CreateUmaxValueFromString(x) //Extrahierte Zeichen zu Kommazahl wandeln 
+    VoltInitial = VoltInitial / 100 * 50; //Initialwert für Limit berechnen
+    if (logging) log("InitialSpannung "+x+" gesetzt auf 50%= " + VoltInitial);
+    States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
+    DpCount++;
+};
+States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: true, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
+DpCount++;
+States[DpCount] = { id: praefix + "OverviewTable", initial: "", forceCreation: false, common: { read: true, write: true, name: "Einfache HTML Übersichtstabelle", type: "string", role: "state", def: "" } }; //
 
 //Alle States anlegen, Main aufrufen wenn fertig
 let numStates = States.length;
@@ -63,19 +70,87 @@ States.forEach(function (state) {
         };
     });
 });
+//}
+
+function CreateUmaxValueFromString(x) {
+    let dummy = WelcheFunktionVerwenden[x].substr(WelcheFunktionVerwenden[x].length - 2, 2) //Aus der Funktionsbezeichnung die letzten beiden Zeichen extrahieren= z.B. 33
+    return toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) //Die extrahierten Zeichen zu einer Kommazahl wandeln= z.B. 3.3
+}
+
+function Init() {
+    if (logging) log("Reaching init()");
+    let counter = 0; //Zähler für Devices
+    let TempVal // Temporärer Sensorwert um nicht mehrere GetStates zu benötigen
+    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
+    for (let x in Funktionen) {        // loop ueber alle Funktionen
+        let Funktion = Funktionen[x].name; // Einzelne Funktion aus dem Array
+        if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnug verwendet
+        let members = Funktionen[x].members; //Array mit allen Mitgliedern der Funktion erzeugen
+        for (let z = 0; z < WelcheFunktionVerwenden.length; z++) { //Loop über alle Funktions welche zu WelcheFunktionVerwenden passen
+            if (Funktion == WelcheFunktionVerwenden[z]) { //Wenn Function ist WelcheFunktionVerwenden (BatterieSpannung)
+                let Umax = CreateUmaxValueFromString(z) //Batteriesollspannung aus der Funktionsbezeichnung extrahieren
+                let BattMinLimitTemp = getState(praefix + "BatteryMinLimit_" + WelcheFunktionVerwenden[z].substr(WelcheFunktionVerwenden[z].length - 2, 2)).val //Temporäres (für den jeweiligen Schleifendurchlauf) MinLimit einlesen
+                for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
+                    Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
+
+                    TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
+                    //if (logging) log(typeof (TempVal))
+                    switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
+                        case "boolean":
+                            if (TempVal) { //Bei Lowbat=true
+                                SensorVal[counter] = BattMinLimitTemp - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                            }
+                            else {
+                                SensorVal[counter] = Umax; //Batt wird als voll definiert und auf Umax gesetzt
+                            };
+                            break;
+                        case "number": //Sensorval ist normale Zahl
+                            SensorVal[counter] = TempVal;
+                            break;
+                        default:
+                    };
+
+                    SensorUmax[counter] = Umax; //Synchrones UmaxArray anlegen
+                    SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte errechnen
+                    BatteryMinLimit[counter] = BattMinLimitTemp; //Limit zuweisen
+                    if (logging) log(counter + " " + Funktion + ' found at ' + members[y] + " Umax= " + SensorUmax[counter] + " BattMinLimit=" + BattMinLimitTemp + " Val= " + SensorVal[counter] + " SensorProzent= " + SensorUProz[counter]);
+                    counter++
+                };
+            };
+        };
+    };
+}
+
+function FillWelcheFunktionVerwenden() {
+    if (logging) log("Reaching FillWelcheFunktionVerwenden");
+    let z = 0;
+    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
+    //let NumFunktionen = Funktionen.length
+    for (let x in Funktionen) {        // loop ueber alle Funktionen
+        let Funktion = Funktionen[x].name; // Einzelne Funktion aus dem Array
+        if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnung verwendet
+        let members = Funktionen[x].members; //Array mit allen Mitgliedern der Funktion erzeugen
+        if (Funktion.includes(FunktionBaseName)) {
+            WelcheFunktionVerwenden[z] = Funktion;
+            if (logging) log("Found Function " + WelcheFunktionVerwenden[z])
+            z++
+        };
+        //NumFunktionen--
+        //if (NumFunktionen === 0) {
+        // if (logging) log("FillWelcheFunktionVerwenden fertig, calling CreateStates!");
+        //CreateStates();
+        //};
+    };
+}
 
 function main() {
     if (logging) log("Reaching main()");
-
-    BatteryMinLimit = getState(praefix + "BatteryMinLimit").val; //Werte vom Script einlesen;
-    for (let x = 0; x < Sensor.length; x++) {
-        SensorVal[x] = getState(Sensor[x]).val;//Wert vom Sensor einlesen
-        //if (logging) log(SensorVal[x]);
-    };
-
+    Init(); //Alle Werte einlesen, Arrays füllen
     CreateTrigger(); // Trigger erzeugen
     CheckAllBatterys(); // Alle Batteriestände prüfen
     CheckNextLowBatt(); // Batterie mit niedrigster Spannung finden
+    MakeTable();
+
 }
 
 function Meldung(msg) {
@@ -96,12 +171,13 @@ function Meldung(msg) {
 }
 
 function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannung, ignoriert Batterien welche das Limit bereits unterschritten haben da diese bereits in der LastMessage gemeldet werden
-    let LowestBattVal = 100;
-    let LowestBattIndex = 0
+    let LowestBattProz = 100; //Mit 100% initialisieren
+    let LowestBattIndex = 0;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
-        if (SensorVal[x] > BatteryMinLimit) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
-            if (SensorVal[x] < LowestBattVal) { //Wenn Sensorwert kleiner LowestBattVal, LowestBattVal auf neuen Wert setzen um min Value zu ermitteln
-                LowestBattVal = SensorVal[x];
+        if (SensorState[x] != "warn") SensorState[x] = "ok";
+        if (SensorVal[x] > BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
+            if (SensorUProz[x] < LowestBattProz) { //Wenn Sensorwert kleiner LowestBattProz, LowestBattVal auf neuen Wert setzen um das Gerät mit den wenigsten Prozent zu ermitteln
+                LowestBattProz = SensorUProz[x];
                 LowestBattIndex = x;
             };
         };
@@ -109,13 +185,14 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
 
     NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex] + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(Sensor[LowestBattIndex].substring(0, Sensor[LowestBattIndex].lastIndexOf("."))).common.name
     setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt);
-    log(NextExpectedLowBatt);
+    SensorState[LowestBattIndex] = "info";
+    if (logging) log(NextExpectedLowBatt);
 }
 
 function CheckAllBatterysOk() {
     AllBatterysOk = true;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
-        if (SensorVal[x] < BatteryMinLimit) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
+        if (SensorVal[x] < BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
             AllBatterysOk = false;
         };
     };
@@ -123,34 +200,42 @@ function CheckAllBatterysOk() {
     if (AllBatterysOk == true && LastMessage != "") {
         LastMessage = ""; //Lastmessage löschen
         setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage löschen
-        if (logging) log("Alle Batterien ok, Lastmessage gelöscht")
+        if (logging) log("Alle Batterien ok, Lastmessage gelöscht");
     };
 }
 
 function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn getriggert
-    if (logging) log("Reaching CheckBatterys(x)");
-    if (SensorVal[x] < BatteryMinLimit) { //Wenn Min. Wert unterschritten
+    if (logging) log("Reaching CheckBatterys("+x+") Val=" + SensorVal[x] + " Limit=" + BatteryMinLimit[x]);
+    if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
         LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
         Meldung(LastMessage);
+        SensorState[x] = "warn";
+    }
+    else {
+        SensorState[x] = "ok";
     };
     CheckAllBatterysOk();
     CheckNextLowBatt();
+    MakeTable();
 }
 
-function CheckAllBatterys() { // Prüfung alle Batteriestände bei Skriptstart
-    if (logging) log("Reaching CheckAllBatterys() found " + (Sensor.length + 1) + " Devices");
+function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
+    if (logging) log("Reaching CheckAllBatterys() found " + (Sensor.length) + " Devices");
     //LastMessage = ""
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
-        if (SensorVal[x] < BatteryMinLimit) { //Wenn Min. Wert unterschritten
-            if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLinmit von " + BatteryMinLimit + " V");
-            //setTimeout(function () { //TimeOut damit die Meldung nachkommt wenn mehrere, ohne wird nur der erste angezeigt weil zu schnell
+        if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
+            if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLinmit von " + BatteryMinLimit[x] + " V");
             LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
-            //}, 100 * x); //Wert der Schleife mit 100 multiplizieren damit bei jedem Durchlauf der Wert um 100ms erhöht wird
+            SensorState[x] = "warn";
+        }
+        else {
+            if (SensorState[x] != "info") SensorState[x] = "ok";
         };
     };
     CheckAllBatterysOk()
     LastMessage = LastMessage.substr(0, LastMessage.length - LastMessageSeparator.length); //letzten <br> Umbruch wieder entfernen
     if (LastMessage != "") Meldung(LastMessage); // Wenn Lastmessage nicht leer, Nachricht ausgeben
+    //MakeTable();
 }
 
 function GetRoom(x) {  // Raum eines Gerätes ermitteln
@@ -158,20 +243,69 @@ function GetRoom(x) {  // Raum eines Gerätes ermitteln
     if (typeof room == 'object') room = room.de;
     room = room.replace(/_/g, " "); //Unterstriche durch Leerzeichen ersetzen
     return room;
-};
+}
+
+function MakeTable() {
+    if (logging) log("Reaching Mytable");
+    let BgColor = "";
+    let style0 = "style='border: 1px solid black; padding-left: 5px; padding-right: 5px; font-size:0.8em; font-weight: normal; text-align: left; color:" + FontColor + "; background-color:"
+    let style1 = "style='width: 40px; border: 1px solid black; padding-left: 5px; padding-right: 5px; font-size:0.8em; font-weight: normal; text-align: right; color:" + FontColor + "; background-color:"
+    let headstyle0 = "style='border: 1px solid black; padding-left: 5px; padding-right: 5px; height: 30px; font-size:1.0em; font-weight: bold; text-align: left; color:" + HeadFontColor + "; background-color:"
+    let headstyle1 = "style='width: 40px; border: 1px solid black; padding-left: 5px; padding-right: 5px; height: 30px; font-size:1.0em; font-weight: bold; text-align: right; color:" + HeadFontColor + "; background-color:"
+
+    let MyTable = "<table style='width:100%; border: 1px solid black; border-collapse: collapse;'><tr><th " + headstyle0 + HeadBgColor + "'>Sensor</th><th " + headstyle0 + HeadBgColor + "'>Raum</th><th " + headstyle1 + HeadBgColor + "'>Umax</th><th " + headstyle1 + HeadBgColor + "'>Ist</th><th " + headstyle1 + HeadBgColor + "'>%</th></tr>"
+    for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen 
+        switch (SensorState[x]) {
+            case "ok":
+                BgColor = TblOkBgColor;
+                break;
+            case "info":
+                BgColor = TblInfoBgColor;
+                break;
+            case "warn":
+                BgColor = TblWarnBgColor;
+                break;
+            default:
+        };
+        MyTable = MyTable + "<tr><td " + style0 + BgColor + "'>" + Sensor[x] + "</td><td " + style0 + BgColor + "'>" + GetRoom(x) + "</td><td " + style1 + BgColor + "'>" + SensorUmax[x].toFixed(1) + "V</td><td " + style1 + BgColor + "'>" + SensorVal[x].toFixed(2) + "V</td><td " + style1 + BgColor + "'>" + toInt(SensorUProz[x]) + "%</td></tr>"
+
+    };
+    MyTable = MyTable + "</table>"
+    setState(praefix + "OverviewTable", MyTable)
+    //if (logging) log(MyTable);
+}
+
 
 //Trigger für Sensoren erzeugen
 function CreateTrigger() {
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         on(Sensor[x], function (dp) { //Trigger in Schleife erstellen
-            SensorVal[x] = dp.state.val;
-            CheckBatterys(x);
+            let TempVal;
+            TempVal = dp.state.val;
+            switch (typeof (TempVal)) {
+                case "boolean":  //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
+                    if (TempVal) { //Bei Lowbat=true
+                        SensorVal[x] = BatteryMinLimit[x] - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                    }
+                    else {
+                        SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
+                    };
+                    break;
+                case "number":  //Sensorval ist normale Zahl
+                    SensorVal[x] = TempVal;
+                    break;
+                default:
+
+            };
+            SensorUProz[x] = SensorVal[x] / SensorUmax[x] * 100; //Sensor Prozentwert in Array aktualisieren
+            CheckBatterys(x); //Prüfen
         });
     };
 
-    on(praefix + "BatteryMinLimit", function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
-        BatteryMinLimit = dp.state.val;
-        CheckAllBatterys();
-    });
+    for (let x = 0; x < WelcheFunktionVerwenden.length; x++) { //Alle Batteriefunktionen durchlaufen
+        on(praefix + WelcheFunktionVerwenden[x], function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
+            main(); //Neuzuweisung des geänderten Limits
+        });
+    };
 }
 

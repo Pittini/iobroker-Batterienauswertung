@@ -1,33 +1,90 @@
-# Script um die Batteriestände beliebig vieler Geräte mit gleichem LowLimit zu überwachen
+# Generisches Script um die Batteriestände beliebig vieler Geräte, auch mit unterschiedlichen Spannungen und LowLimit, zu überwachen
 
-#### Kann beliebige Geräte überwachen welche einen Datenpunkt mit der Batteriespannung zur Verfügung stellen und das gleiche LowLimit haben.
-#### Legt vier Datenpunkte an 
-* **AllBatterysOk** - Summenfeld 
-* **BatteryMinLimit** - Einstellfeld für die LimitSpannung  
-* **LastMessage** - Die letzte ausgegebene Nachricht (Wird autom. gelöscht sobald wieder alle Batterien innerhalb des limits sind) - 
-* **NextExpectedLowBatt** - Raum und Gerät der Batterie mit aktuell niedrigsten Stand aber noch innerhalb des Limits
-#### Möglichkeit eine Meldung/Ansage via Log/Alexa/Telegram auszugeben
 
-# WICHTIG!!!  
-### **Vorraussetzungen:** Den Geräten müssen Räume zugewiesen sein (gesamter Channel), sowie eine Funktion, z.B. "BatterieSpannung" für jeden entsprechenden Datenpunkt welcher die Batteriespannung des Gerätes anzeigt. **Aber hier nur für den Datenpunkt, nicht den gesamten Channel!!!**  
-![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
+# Features
+* Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, oder zumindest Lowbat zur Verfügung stellen.
+* Es können simultan Geräte mit unterschiedlichen Spannungen überwacht werden, z.B. 1,5V und 3V, auch Geräte welche nur LowBat true/false bereitstellen können berücksichtigt werden.
+* Möglichkeit eine Meldung/Ansage via Log/Alexa/Telegram bei unterschreiten einer einstellbaren Limitspannung auszugeben.
+* permanente Anzeige des Gerätes mit der niedrigsten Spannung (außer Lowbat, da hier die Info nicht verfügbar ist).
+* Kleines Set aus vordefinierten Standart Vis Widgets (Basic-String, Basic-Bool, Html) zur leichteren Integration, bzw. als Beispiel für eigene Vis Projekte.
+* Einfache, dynamisch erstellte Html Übersichtstabelle
+* Nach Installation keine Skriptänderungen mehr nötig um neue Geräte hinzuzufügen.
 
 # Installation
-1. Wenn noch nicht geschehen, allen gewünschten Sensoren einen Raum und eine Funktion zuweisen. Die Funktion muss vorher in den Aufzählungen hinzugefügt werden und könnte z.B. "BatterieSpannung" lauten. Soll ein anderer Begriff verwendet werden, muss dies dann auch im Script, Zeile 10 geändert werden. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es oft hilfreich die JS Instanz neu zu starten da diese bei Aufzählungsänderungen gerne mal "zickt" was dann zu Skriptfehlern führt**.
-2. Das Skript in ein neues JS Projekt kopieren.
-3. Zeile 8-16 kontrollieren und bei Bedarf anpassen
-4. Zeile 11-13 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen.
-5. Skript starten
-6. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt 4 Datenpunkte geben. Diese Datenpunkte könnt Ihr jetzt z.B. in Vis verwenden um Farbwechsel für Icons zu erstellen (AllBatteriesOk true/false), bzw. anzuzeigen welche Batterie gewechselt werden muß (LastMessage), bzw. welche Batterie vorrausichtlich als nächste leer wird, damit Ihr schon mal die richtige Neue besorgen könnt.
+1. Unter Aufzählungen > Funktionen, eine oder mehrere Funktion/en hinzufügen - wieviele ist abhängig davon wieviele verschiedene Batteriespannungen ihr überwachen wollt. 
+Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.   
+![batterienauswertungtut2.jpg](/admin/batterienauswertungtut2.jpg) 
+Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivieren:  
+![batterienauswertungtut3.jpg](/admin/batterienauswertungtut3.jpg) 
 
-# Demo Widget für Vis
-viswidget.txt ist ein kleines Demowidget welche die relevanten Infos des Skriptes visualisiert. Es zeigt links ein Batteriesymbol mit grünem Hintergrund, welcher bei Limitunterscheidung rot blinkt. Gleichzeitig wird die im grünen Zustand unsichtbare Lastmessage eingeblendet und blinkt ebenfalls rot. Immer sichtbar ist die Anzeige der vorrausichtlich nächsten Batterie welche leer wird, mit Raum und Geräteangabe. Das ganze ist nur EIN ganz normales String Widget. Es verwendet jedoch das Iconset "Mfd icons as SVG" welches installiert sein sollte, sonst fehlt das Batteriesymbol. Selbstverständlich könnt ihr aber auch andere, eigene Icons eintragen.  
 
-![battok.png](/admin/battok.png) 
-![battalarm1.png](/admin/battalarm1.png) 
+2. Solltet Ihr noch keine Räume definiert haben, so holt dies bitte jetzt unter Aufzählungen > Räume nach.
+3. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
+![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
+4. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es sinnvoll die JS Instanz neu zu starten da diese die Änderungen sonst nicht mitbekommt, was dann zu Skriptfehlern führt**.
+5. Nun den Inhalt der Skriptdatei [batterienauswertung.js](/batterienauswertung.js) in ein neues JS Projekt kopieren.  
+   1. 
+   ![batterienauswertungtut4.jpg](/admin/batterienauswertungtut4.jpg) 
+   2. Wie Ihr das Skript nennt bleibt Euch überlassen, "BattUeberwachung" ist als Beispiel zu sehen. Ihr solltet jedoch darauf achten dass das Skript im Ordner "common" erstellt wird.
+   ![batterienauswertungtut5.jpg](/admin/batterienauswertungtut5.jpg) 
+   3. In das nun frisch angelegte, leere Skriptprojekt den Inhalt der Skriptdatei einfügen (Strg V). Das ganze sollte nun in etwa so aussehen:
+   ![batterienauswertungtut6.jpg](/admin/batterienauswertungtut6.jpg) 
+
+
+6. Nun Zeile 8-24 kontrollieren und bei Bedarf anpassen, wofür die einzelnen Zeilen gut sind, steht jeweils rechts daneben. 
+7. Zeile 11-13 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
+8. Skript speichern.
+9. Skript starten.
+10. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 5 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
+   ![batterienauswertungtut7.jpg](/admin/batterienauswertungtut7.jpg)  
+Diese Datenpunkte haben folgenden Sinn/Bedeutung:
+    1. **AllBatteriesOk** - Summenauswertung über alle Batterien - könnt Ihr z.B. in Vis verwenden um Farbwechsel für Icons zu erstellen (siehe Demo Widgets).
+    2. **BatteryMinLimit_xx** - Einstellfeld/er für das min. Limit bei Batterien der in xx angegebenen Spannung/en (z.B. "BatteryMinLimit_30"). Dieses Feld gibt es mindestens einmal, je nach Setup aber auch mehrmals, wobei sich immer die Zahl xx ändert. Vom Skript werden hier default Werte gesetzt welche 50% der max. Spannung betragen, können aber von Euch frei angepasst werden da dieser Wert auch etwas Geräteabhängig ist.
+    3. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
+    4. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
+    5. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
+ 11. Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
+    
+
+# Demo Widget Satz für Vis
+viswidgets.txt ist ein kleiner Demowidgetsatz welche die relevanten Infos des Skriptes visualisiert.  
+Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die Batterie Infos von "ganz einfach" mit nur einem Icon, bis zur umfangreichen Übersichtstabelle darstellen können.
+1. Ein simples Icon welches grün insgesamt volle Batterien anzeigt, rot blinkend eine zu wechselnde Batterie.  
+![widgetstut1.png](/admin/widgetstut1.png) ![widgetstut2.png](/admin/widgetstut2.png) 
+2. Eine etwas ausführlichere Darstellung, bestehend aus:  
+    * links ein Batteriesymbol mit grünem Hintergrund, welches bei Limitunterscheidung rot blinkt. 
+    * Gleichzeitig wird die im grünen Zustand unsichtbare Lastmessage eingeblendet und blinkt ebenfalls rot. 
+    * Immer sichtbar ist die Anzeige der vorrausichtlich nächsten Batterie welche leer wird, mit Raum und Geräteangabe (hier werden Geräte welche nur Lowbat true/false liefern aufgrund der mangelnden Daten nicht berücksichtigt).  
+
+    ![battok.png](/admin/battok.png) 
+    ![battalarm1.png](/admin/battalarm1.png) 
+
+    Beide Widgets bestehen jeweil aus nur einem Basic Widget und können jederzeit von Euch geändert werden. Sie verwenden jedoch das Iconset "Mfd icons as SVG" welches (als Adapter) installiert sein sollte, sonst fehlt das Batteriesymbol. 
+    ![widgetstut5.jpg](/admin/widgetstut5.jpg)
+    Selbstverständlich könnt ihr aber auch andere, eigene Icons eintragen.  
+3. Das dritte Widget besteht aus einem einfachen HTML Widget mit Binding und zeigt Euch eine Übersicht über alle Geräte, Räume und Batteriestände.      
+   * Gesondert markiert (in der Grundeinstellung gelb) wird die Zeile des Gerätes mit dem niedrigsten prozentualen Batteriestand welches sich aber noch innerhalb des festgelegten Limits befindet (hier werden Geräte welche nur Lowbat true/false liefern aufgrund der mangelnden Daten nicht berücksichtigt).  
+   * Ebenfalls gesondert markiert (in der Grundeinstellung rot) wird die Zeile mit Geräten unterhalb des Limits. Diese Markierung erscheint nur wenn eine Batterie das Limit unterschreitet und verschwindet wieder sobald die Spannung der Batterie wieder im Sollbereich ist.  
+
+    ![widgetstut6.png](/admin/widgetstut6.png)  
+
+    **Info:** 
+    * Die dargestellten Spannungen "Umax" zeigen welche Batteriespannung Ihr den Geräten in der Funktion zugewiesen habt.  
+    * Die "Ist"-Spalte gibt mit Ausnahme der lowbat Geräte die Werte der jeweiligen Datenpunkte aus. Bei lowbat Geräten greift folgendes Verfahren, 
+    bei lowbat=false wird die volle Umax Spannung angenommen, 
+    bei lowbat=true wird eine Spannung 0.1Volt unter dem eingestellten Limit angenommen.  
+    * Die "%" Spalte errechnet sich unter verwendung von Umax und ist (mit den oben erwähnten einschränkungen bei lowbat Geräten)
+
+    * Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 19-24 ändern. Es sind sowohl benannte Farben als auch Hexwerte mit vorangestelltem # erlaubt.
+
+
+---
+
 
 # Changelog
 
+#### 30.3.2020 (V 1.4)
+* Add: Skript kann nun simultan verschiedene Batteriespannungen üerwachen
 #### 27.3.2020 (V 1.3.1)
 * Change: Unterstriche in Raumnamen werden bei Ausgaben durch Leerzeichen ersetzt  
 * Add: Bei Skriptstart werden nun alle deklarierten Geräte ausgegeben, sowie die Gesamtzahl dieser.
