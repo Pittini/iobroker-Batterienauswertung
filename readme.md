@@ -2,24 +2,24 @@
 
 
 # Features
-* Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, oder zumindest Lowbat zur Verfügung stellen.
-* Es können simultan Geräte mit unterschiedlichen Spannungen überwacht werden, z.B. 1,5V und 3V, auch Geräte welche nur LowBat true/false bereitstellen können berücksichtigt werden.
-* Möglichkeit eine Meldung/Ansage via Log/Alexa/Telegram bei unterschreiten einer einstellbaren Limitspannung auszugeben.
+* Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, eine Prozentangabe oder zumindest Lowbat zur Verfügung stellen.
+* Es können simultan Geräte mit unterschiedlichen Spannungen überwacht werden, z.B. 1,5V und 3V, auch Geräte welche nur LowBat true/false bereitstellen können berücksichtigt werden ebenso wie Prozentwerte in zwei Varianten.
+* Möglichkeit eine Meldung/Ansage via Log/Mail/Alexa/Telegram bei unterschreiten einer einstellbaren Limitspannung auszugeben.
 * permanente Anzeige des Gerätes mit der niedrigsten Spannung (außer Lowbat, da hier die Info nicht verfügbar ist).
 * Kleines Set aus vordefinierten Standart Vis Widgets (Basic-String, Basic-Bool, Html) zur leichteren Integration, bzw. als Beispiel für eigene Vis Projekte.
-* Einfache, dynamisch erstellte Html Übersichtstabelle
+* Einfache, dynamisch erstellte Html Übersichtstabelle mit einstellmöglichkeit welche Spalten angezeigt werden sollen
 * Nach Installation keine Skriptänderungen mehr nötig um neue Geräte hinzuzufügen.
 
 # Installation
 1. Unter Aufzählungen > Funktionen, eine oder mehrere Funktion/en hinzufügen - wieviele ist abhängig davon wieviele verschiedene Batteriespannungen ihr überwachen wollt. 
-Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.   
+Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte, "BatterieSpannung_120" für 12V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.   
 ![batterienauswertungtut2.jpg](/admin/batterienauswertungtut2.jpg) 
 Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivieren:  
 ![batterienauswertungtut3.jpg](/admin/batterienauswertungtut3.jpg) 
 
 
 2. Solltet Ihr noch keine Räume definiert haben, so holt dies bitte jetzt unter Aufzählungen > Räume nach.
-3. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
+3. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuzuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
 4. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es sinnvoll die JS Instanz neu zu starten da diese die Änderungen sonst nicht mitbekommt, was dann zu Skriptfehlern führt**.
 5. Nun den Inhalt der Skriptdatei [batterienauswertung.js](/batterienauswertung.js) in ein neues JS Projekt kopieren.  
@@ -31,15 +31,15 @@ Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivi
    ![batterienauswertungtut6.jpg](/admin/batterienauswertungtut6.jpg) 
 
 
-6. Nun Zeile 8-24 kontrollieren und bei Bedarf anpassen, wofür die einzelnen Zeilen gut sind, steht jeweils rechts daneben. 
-7. Zeile 11-13 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
+6. Nun Zeile 8-24 kontrollieren und bei Bedarf anpassen, wofür die einzelnen Zeilen gut sind, steht jeweils im Kommentar rechts daneben. 
+7. Zeile 11-14 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
 8. Skript speichern.
 9. Skript starten.
 10. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 5 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
    ![batterienauswertungtut7.jpg](/admin/batterienauswertungtut7.jpg)  
 Diese Datenpunkte haben folgenden Sinn/Bedeutung:
     1. **AllBatteriesOk** - Summenauswertung über alle Batterien - könnt Ihr z.B. in Vis verwenden um Farbwechsel für Icons zu erstellen (siehe Demo Widgets).
-    2. **BatteryMinLimit_xx** - Einstellfeld/er für das min. Limit bei Batterien der in xx angegebenen Spannung/en (z.B. "BatteryMinLimit_30"). Dieses Feld gibt es mindestens einmal, je nach Setup aber auch mehrmals, wobei sich immer die Zahl xx ändert. Vom Skript werden hier default Werte gesetzt welche 50% der max. Spannung betragen, können aber von Euch frei angepasst werden da dieser Wert auch etwas Geräteabhängig ist.
+    2. **BatteryMinLimit_xx** - Einstellfeld/er für das min. Limit bei Batterien der in xx angegebenen Spannung/en (z.B. "BatteryMinLimit_30"). Dieses Feld gibt es mindestens einmal, je nach Setup aber auch mehrmals, wobei sich immer die Zahl xx ändert. Vom Skript werden hier default Werte gesetzt welche 80% der max. Spannung betragen, können aber von Euch frei angepasst werden da dieser Wert auch etwas Geräteabhängig ist.
     3. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
     4. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
     5. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
@@ -79,7 +79,7 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
       * bei lowbat=true wird eine Spannung 0.1Volt unter dem eingestellten Limit angenommen.
     * Spalte "ULimit" zeigt die für das Gerät eingestellte Limit Spannung ab der eine Warnung ausgegeben wird.
     * Die "%bat" Spalte errechnet sich unter Verwendung von Umax/UNenn und zeigt (mit den oben erwähnten einschränkungen bei lowbat Geräten) die restliche Batteriekapazität in %.
-    * Die "%live" Spalte zeigt die prozentuale restliche Lebensdauer des Gerätes an. Dies ist auch der %Wert welcher beim mi-home Adapter ausgegeben wird. Beispiel: Im Gerät ist eine 3V Batterie verbaut. Das Gerät fällt aus bei 2V, verbleibt ein "Spannungsfenster" von 1V. Hat die Batterie nun den aktuellen Stand von 2.5V, so würde dies ein %live von 50% ergeben, während die Batteriekapazität bei 75% stehen würde.
+    * Die "%live" Spalte zeigt die prozentuale restliche Lebensdauer des Gerätes an. Dies ist auch der %Wert welcher beim mi-home Adapter ausgegeben wird. Beispiel: Im Gerät ist eine 3V Batterie verbaut. Das Gerät fällt aus bei 2V, verbleibt ein "Spannungsfenster" von 1V. Hat die Batterie nun den aktuellen Stand von 2.5V, so würde dies ein %live von 50% ergeben, während die Batteriekapazität bei 75% stehen würde. Die ist quasi der Wert wie Ihr ihn z.B vom Handy kennt. das Gerät fällt bei 0% aus, da hat die Batterie aber durchaus noch zig% der Nennspannung.
     * Spalte "Status" zeigt den vom Skript ermittelten Status der Batterie, welcher auch für die Anzeige der Farbbalken verwendet wird in Textform.
 
 * Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 21-26 ändern. Es sind sowohl benannte Farben z.B. "rot" als auch Hexwerte mit vorangestelltem # , z.B. "#ff0000" erlaubt. Eine Übersicht benannter Farben und Hex-Werte findet Ihr z.B. [hier](https://wiki.selfhtml.org/wiki/Grafik/Farbpaletten).

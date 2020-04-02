@@ -63,8 +63,8 @@ FillWelcheFunktionVerwenden(); //Vorab Funktionen mit Umax Spannungen einlesen d
 for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
     let dummy = WelcheFunktionVerwenden[x].slice(FunktionBaseName.length) //Letzten Zeichen aus Funktionsnamen extrahieren
     let VoltInitial = CreateUmaxValueFromString(x) //Extrahierte Zeichen zu Kommazahl wandeln 
-    VoltInitial = VoltInitial / 100 * 50; //Initialwert für Limit berechnen
-    if (logging) log("InitialSpannung " + x + " gesetzt auf 50%= " + VoltInitial);
+    VoltInitial = VoltInitial / 100 * 80; //Initialwert für Limit berechnen
+    if (logging) log("InitialSpannung " + x + " gesetzt auf 80%= " + VoltInitial);
     States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
     DpCount++;
 };
