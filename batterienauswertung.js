@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5 Stand 2.04.2020
+// Batterieüberwachungsskript Version 1.5.1 Stand 2.04.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -33,7 +33,7 @@ const TblShowUistCol = true; //Tabellenspalte mit aktueller Batteriespannung anz
 const TblShowUlimitCol = true; //Tabellenspalte mit unterer Batterielimit Spannung anzeigen?
 const TblShowProzbatCol = true; //Tabellenspalte mit Batteriestand in Prozent anzeigen?
 const TblShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Berücksichtigung der Limitspannung in Prozent anzeigen? Beispiel: Batterie hat 3V Nennspannung, Limit ist bei 2V, aktueller Batteriestand ist 2.5V, dann wäre die Restlebensdauer 50%
-const TblShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
+const TblShowStatusCol = false; //Tabellenspalte mit Status ausgeben?
 
 //Ab hier nix mehr ändern
 
@@ -86,7 +86,7 @@ States.forEach(function (state) {
 
 function CreateUmaxValueFromString(x) {
     let dummy = WelcheFunktionVerwenden[x].slice(FunktionBaseName.length) //Aus der Funktionsbezeichnung die letzten beiden Zeichen extrahieren= z.B. 33
-    return toFloat(dummy.slice(0,dummy.length- 1) + "." + dummy.slice(-1)) //Die extrahierten Zeichen zu einer Kommazahl wandeln= z.B. 3.3
+    return toFloat(dummy.slice(0, dummy.length - 1) + "." + dummy.slice(-1)) //Die extrahierten Zeichen zu einer Kommazahl wandeln= z.B. 3.3
 }
 
 function Init() {
@@ -106,6 +106,7 @@ function Init() {
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
+                    if (typeof (TempVal) == undefined || typeof (TempVal) == null || TempVal == "") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
                     TempUnit = GetUnit(counter);
                     //if (logging) log(typeof (TempVal))
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
@@ -220,7 +221,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
         };
     };
 
-    NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex].toFixed(2) + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject (GetParentId(Sensor[LowestBattIndex]),"common").common.name;
+    NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex].toFixed(2) + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(GetParentId(Sensor[LowestBattIndex]), "common").common.name;
     setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt);
     SensorState[LowestBattIndex] = "info";
     if (logging) log(NextExpectedLowBatt);
@@ -329,7 +330,7 @@ function MakeTable() {
     if (TblShowProzliveCol) {
         MyTableHead = MyTableHead + "<th " + headstyle1 + HeadBgColor + "'>%live</th>";
     };
-    if (TblShowProzliveCol) {
+    if (TblShowStatusCol) {
         MyTableHead = MyTableHead + "<th " + headstyle1 + HeadBgColor + "'>Status</th>";
     };
 
@@ -378,7 +379,7 @@ function MakeTable() {
         if (TblShowProzliveCol) {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x].toFixed(1) + "%</td>";
         };
-        if (TblShowProzliveCol) {
+        if (TblShowStatusCol) {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorState[x] + "</td>";
         };
 

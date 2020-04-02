@@ -89,6 +89,9 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 2.4.20 (V1.5.1)
+* Fix: Statusspalte kann nun wie vorgesehen ausgeblendet werden.
+* Add: Bei leeren Spannungs- oder %- Werten wird nun 0 angenommen um Fehler zu vermeiden.
 #### 2.4.20 (V.1.5)
 * Add: Es können nun auch Sensoren welche nur % Angaben liefern mit überwacht werden. Dies gilt sowohl für Batteriekapazitäts %, als auch für restliche Lebensdauer % (muß in den Optionen gewählt werden).
 * Add: Zusätzliche Spalten in der Tabelle lfd, Umin, Device Name, Live%, Status.
