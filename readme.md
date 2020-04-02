@@ -69,20 +69,34 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
     ![widgetstut6.png](/admin/widgetstut6.png)  
 
     **Info:** 
-    * Die dargestellten Spannungen "Umax" zeigen welche Batteriespannung Ihr den Geräten in der Funktion zugewiesen habt.  
-    * Die "Ist"-Spalte gibt mit Ausnahme der lowbat Geräte die Werte der jeweiligen Datenpunkte aus. Bei lowbat Geräten greift folgendes Verfahren, 
-    bei lowbat=false wird die volle Umax Spannung angenommen, 
-    bei lowbat=true wird eine Spannung 0.1Volt unter dem eingestellten Limit angenommen.  
-    * Die "%" Spalte errechnet sich unter verwendung von Umax und ist (mit den oben erwähnten einschränkungen bei lowbat Geräten)
+    * Spalte "lfd" zeigt fortlaufende Nummer, zählt also die zugewiesenen Geräte.
+    * Spalte "Sensor" ID zeigt die ID des Gerätes
+    * Spalte "Sensor Name" zeigt Name des Gerätes
+    * Spalte "Raum" zeigt den dem Gerät zugewiesenen Raum
+    * Spalte "UNenn" zeigt welche Batteriespannung Ihr den Geräten in der Funktion zugewiesen habt und sollte der Nennspannung der Batterie/en entsprechen.
+    * Die "Ist"-Spalte gibt mit Ausnahme der lowbat Geräte die Werte der jeweiligen Datenpunkte aus. Bei lowbat Geräten greift folgendes Verfahren: 
+      * bei lowbat=false wird die volle Umax Spannung angenommen, 
+      * bei lowbat=true wird eine Spannung 0.1Volt unter dem eingestellten Limit angenommen.
+    * Spalte "ULimit" zeigt die für das Gerät eingestellte Limit Spannung ab der eine Warnung ausgegeben wird.
+    * Die "%bat" Spalte errechnet sich unter Verwendung von Umax/UNenn und zeigt (mit den oben erwähnten einschränkungen bei lowbat Geräten) die restliche Batteriekapazität in %.
+    * Die "%live" Spalte zeigt die prozentuale restliche Lebensdauer des Gerätes an. Dies ist auch der %Wert welcher beim mi-home Adapter ausgegeben wird. Beispiel: Im Gerät ist eine 3V Batterie verbaut. Das Gerät fällt aus bei 2V, verbleibt ein "Spannungsfenster" von 1V. Hat die Batterie nun den aktuellen Stand von 2.5V, so würde dies ein %live von 50% ergeben, während die Batteriekapazität bei 75% stehen würde.
+    * Spalte "Status" zeigt den vom Skript ermittelten Status der Batterie, welcher auch für die Anzeige der Farbbalken verwendet wird in Textform.
 
-    * Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 19-24 ändern. Es sind sowohl benannte Farben als auch Hexwerte mit vorangestelltem # erlaubt.
+* Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 21-26 ändern. Es sind sowohl benannte Farben z.B. "rot" als auch Hexwerte mit vorangestelltem # , z.B. "#ff0000" erlaubt. Eine Übersicht benannter Farben und Hex-Werte findet Ihr z.B. [hier](https://wiki.selfhtml.org/wiki/Grafik/Farbpaletten).
 
 
 ---
 
 
 # Changelog
-
+#### 2.4.20 (V.1.5)
+* Add: Es können nun auch Sensoren welche nur % Angaben liefern mit überwacht werden. Dies gilt sowohl für Batteriekapazitäts %, als auch für restliche Lebensdauer % (muß in den Optionen gewählt werden).
+* Add: Zusätzliche Spalten in der Tabelle lfd, Umin, Device Name, Live%, Status.
+* Add: Gewünschte Tabellenspalten können nun im Einstellungsbereich aktiviert/deaktiviert werden.
+* Change: Spalte Sensor umbennannt zu Sensor ID und zeigt jetzt die ID des Gerätes statt der ID des Datenpunktes.
+* Change: Spalte Umax umbenannt zu UNenn
+* Add: Nun auch Nachrichtenversand via Mail möglich 
+* Change: Batteriespannungsangabe bei Lastmessage auf 2 Nachkommastellen gerundet.
 #### 30.3.2020 (V 1.4)
 * Add: Skript kann nun simultan verschiedene Batteriespannungen üerwachen
 #### 27.3.2020 (V 1.3.1)
