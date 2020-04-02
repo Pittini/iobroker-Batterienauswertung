@@ -66,7 +66,7 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
    * Gesondert markiert (in der Grundeinstellung gelb) wird die Zeile des Gerätes mit dem niedrigsten prozentualen Batteriestand welches sich aber noch innerhalb des festgelegten Limits befindet (hier werden Geräte welche nur Lowbat true/false liefern aufgrund der mangelnden Daten nicht berücksichtigt).  
    * Ebenfalls gesondert markiert (in der Grundeinstellung rot) wird die Zeile mit Geräten unterhalb des Limits. Diese Markierung erscheint nur wenn eine Batterie das Limit unterschreitet und verschwindet wieder sobald die Spannung der Batterie wieder im Sollbereich ist.  
 
-    ![widgetstut6.png](/admin/widgetstut6.png)  
+    ![widgetstut6a.png](/admin/widgetstut6a.png)  
 
     **Info:** 
     * Spalte "lfd" zeigt fortlaufende Nummer, zählt also die zugewiesenen Geräte.
