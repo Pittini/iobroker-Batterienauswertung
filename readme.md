@@ -89,6 +89,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 13.4.20 (1.5.2)
+* Fix: Problem mit Lowbat Sensoren behoben.
 #### 2.4.20 (V1.5.1)
 * Fix: Statusspalte kann nun wie vorgesehen ausgeblendet werden.
 * Add: Bei leeren Spannungs- oder %- Werten wird nun 0 angenommen um Fehler zu vermeiden.

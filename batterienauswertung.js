@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.1 Stand 2.04.2020
+// Batterieüberwachungsskript Version 1.5.2 Stand 12.04.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -106,9 +106,9 @@ function Init() {
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
-                    if (typeof (TempVal) == undefined || typeof (TempVal) == null || TempVal == "") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
+                    //if (typeof (TempVal) == undefined || typeof (TempVal) == null || TempVal == "") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
                     TempUnit = GetUnit(counter);
-                    //if (logging) log(typeof (TempVal))
+                    if (logging) log("Tempval="+TempVal+" TempUnit="+TempUnit+" TypeOf="+ typeof (TempVal))
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
                         case "boolean": //Sensorval ist Bool
                             if (TempVal) { //Bei Lowbat=true
@@ -118,7 +118,7 @@ function Init() {
                             }
                             else {
                                 SensorVal[counter] = Umax; //Batt wird als voll definiert und auf Umax gesetzt
-                                SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorUProz[counter] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
                                 SensorLiveProz[counter] = 100; //Lebensprozent auf 100%
                             };
                             break;
