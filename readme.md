@@ -89,12 +89,16 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
-#### 13.4.20 (1.5.2)
+#### 14.4.20 (V1.5.3)
+* Fix: Lastmessage wurde unter bestimmten Bedingungen nicht gelöscht.
+* Fix: Trigger für MinLimit Einstellfeld hat bei Änderung nicht ausgelöst.
+* Fix: Rechtschreibfehler in Logmeldung korrigiert.
+#### 13.4.20 (V1.5.2)
 * Fix: Problem mit Lowbat Sensoren behoben.
 #### 2.4.20 (V1.5.1)
 * Fix: Statusspalte kann nun wie vorgesehen ausgeblendet werden.
 * Add: Bei leeren Spannungs- oder %- Werten wird nun 0 angenommen um Fehler zu vermeiden.
-#### 2.4.20 (V.1.5)
+#### 2.4.20 (V1.5.0)
 * Add: Es können nun auch Sensoren welche nur % Angaben liefern mit überwacht werden. Dies gilt sowohl für Batteriekapazitäts %, als auch für restliche Lebensdauer % (muß in den Optionen gewählt werden).
 * Add: Zusätzliche Spalten in der Tabelle lfd, Umin, Device Name, Live%, Status.
 * Add: Gewünschte Tabellenspalten können nun im Einstellungsbereich aktiviert/deaktiviert werden.

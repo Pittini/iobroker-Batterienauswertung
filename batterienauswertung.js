@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.2 Stand 12.04.2020
+// Batterieüberwachungsskript Version 1.5.3 Stand 14.04.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -18,9 +18,9 @@ const UsePopUp = false // Soll PopUp angezeigt werden? Funktion des Authors, sol
 const ProzMeansLive = true; //Zeigen Prozentwerte des Gerätedatenpunktes Batteriekapazität oder restliche Lebensdauer?
 
 //Tabellen Einstellungen
-const TblOkBgColor = "lightgreen"; //Hintergrundfarbe für Batteriestatus Ok
-const TblInfoBgColor = "khaki"; //Hintergrundfarbe für Batteriestatus Info, also die leerste Batterie welche noch nicht das Limit unterschreitet
-const TblWarnBgColor = "salmon"; //Hintergrundfarbe für Batteriestatus Warnung, also jene Batterie welche unter das Limit kam.
+const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
+const TblInfoBgColor = "#ffc107"; //Hintergrundfarbe für Batteriestatus Info, also die leerste Batterie welche noch nicht das Limit unterschreitet
+const TblWarnBgColor = "#f44336"; //Hintergrundfarbe für Batteriestatus Warnung, also jene Batterie welche unter das Limit kam.
 const HeadBgColor = "dimgrey"; //Hintergrundfarbe des Tabellenkopfes
 const FontColor = "black"; //Textfarbe für Tabelleninhalt
 const HeadFontColor = "white"; //Textfarbe für Tabellenkopf
@@ -45,7 +45,8 @@ const SensorUmax = []; //Sensoren Array Batteriespannungswerte Werte initialisie
 const SensorUProz = []; //Sensoren Array Spannung in Prozent initialisieren
 const SensorLiveProz = []; //Sensoren Array verbleibende Lebendauer unter Berücksichtigung des min Limits, nicht zu verwechseln mit Batteriekapazität in %
 const SensorState = []; //Statusarray, mögliche Werte ok,info,warn
-const BatteryMinLimit = [];
+const BatteryMinLimit = []; // Das eingestellte Batterie min. limit
+const BatteryMinLimitDp=[]; //Array mit den generierten MinLimit Einstellungsdatenpunkten
 const WelcheFunktionVerwenden = []; // Array mit allen Einträgen aus Funktionen welche den FunktionBaseName beinhalten
 let AllBatterysOk = true;
 let LastMessage = "";
@@ -66,6 +67,7 @@ for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
     VoltInitial = VoltInitial / 100 * 80; //Initialwert für Limit berechnen
     if (logging) log("InitialSpannung " + x + " gesetzt auf 80%= " + VoltInitial);
     States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
+    BatteryMinLimitDp[x]="BatteryMinLimit_" + dummy;
     DpCount++;
 };
 States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: true, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
@@ -171,11 +173,6 @@ function FillWelcheFunktionVerwenden() {
             if (logging) log("Found Function " + WelcheFunktionVerwenden[z])
             z++
         };
-        //NumFunktionen--
-        //if (NumFunktionen === 0) {
-        // if (logging) log("FillWelcheFunktionVerwenden fertig, calling CreateStates!");
-        //CreateStates();
-        //};
     };
 }
 
@@ -228,6 +225,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
 }
 
 function CheckAllBatterysOk() {
+    if (logging) log("Reaching CheckAllBatterysOk - Lastmessage=" + LastMessage);
     AllBatterysOk = true;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (SensorVal[x] < BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
@@ -235,7 +233,7 @@ function CheckAllBatterysOk() {
         };
     };
     setState(praefix + "AllBatterysOk", AllBatterysOk);
-    if (AllBatterysOk == true && LastMessage != "") {
+    if (AllBatterysOk == true) {
         LastMessage = ""; //Lastmessage löschen
         setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage löschen
         if (logging) log("Alle Batterien ok, Lastmessage gelöscht");
@@ -259,10 +257,10 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
 
 function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
     if (logging) log("Reaching CheckAllBatterys() found " + (Sensor.length) + " Devices");
-    //LastMessage = ""
+    //LastMessage = "";
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
-            if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLinmit von " + BatteryMinLimit[x] + " V");
+            if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLimit von " + BatteryMinLimit[x] + " V");
             LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
             SensorState[x] = "warn";
         }
@@ -439,7 +437,8 @@ function CreateTrigger() {
     };
 
     for (let x = 0; x < WelcheFunktionVerwenden.length; x++) { //Alle Batteriefunktionen durchlaufen
-        on(praefix + WelcheFunktionVerwenden[x], function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
+        on(praefix + BatteryMinLimitDp[x], function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
+        if (logging) log("Reaching Trigger for :"+praefix + BatteryMinLimitDp[x])
             main(); //Neuzuweisung des geänderten Limits an alle Geräte
         });
     };
