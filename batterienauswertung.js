@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.3 Stand 14.04.2020
+// Batterieüberwachungsskript Version 1.5.4 Stand 26.04.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -46,7 +46,7 @@ const SensorUProz = []; //Sensoren Array Spannung in Prozent initialisieren
 const SensorLiveProz = []; //Sensoren Array verbleibende Lebendauer unter Berücksichtigung des min Limits, nicht zu verwechseln mit Batteriekapazität in %
 const SensorState = []; //Statusarray, mögliche Werte ok,info,warn
 const BatteryMinLimit = []; // Das eingestellte Batterie min. limit
-const BatteryMinLimitDp=[]; //Array mit den generierten MinLimit Einstellungsdatenpunkten
+const BatteryMinLimitDp = []; //Array mit den generierten MinLimit Einstellungsdatenpunkten
 const WelcheFunktionVerwenden = []; // Array mit allen Einträgen aus Funktionen welche den FunktionBaseName beinhalten
 let AllBatterysOk = true;
 let LastMessage = "";
@@ -67,7 +67,7 @@ for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
     VoltInitial = VoltInitial / 100 * 80; //Initialwert für Limit berechnen
     if (logging) log("InitialSpannung " + x + " gesetzt auf 80%= " + VoltInitial);
     States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
-    BatteryMinLimitDp[x]="BatteryMinLimit_" + dummy;
+    BatteryMinLimitDp[x] = "BatteryMinLimit_" + dummy;
     DpCount++;
 };
 States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: true, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
@@ -110,7 +110,7 @@ function Init() {
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
                     //if (typeof (TempVal) == undefined || typeof (TempVal) == null || TempVal == "") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
                     TempUnit = GetUnit(counter);
-                    if (logging) log("Tempval="+TempVal+" TempUnit="+TempUnit+" TypeOf="+ typeof (TempVal))
+                    if (logging) log("Tempval=" + TempVal + " TempUnit=" + TempUnit + " TypeOf=" + typeof (TempVal))
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
                         case "boolean": //Sensorval ist Bool
                             if (TempVal) { //Bei Lowbat=true
@@ -144,6 +144,18 @@ function Init() {
                                     SensorVal[counter] = TempVal; //Spannung ist Wert vom DP
                                     SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
                                     SensorLiveProz[counter] = (SensorVal[counter] - BattMinLimitTemp) / (Umax - BattMinLimitTemp) * 100; //Restlebensdauer in % ermitteln
+                            };
+                            break;
+                        case "string": //Sensorval ist Text
+                            if (TempVal == "ok") {
+                                SensorVal[counter] = Umax; //Batt wird als voll definiert und auf Umax gesetzt
+                                SensorUProz[counter] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorLiveProz[counter] = 100; //Lebensprozent auf 100%
+                            }
+                            else if (TempVal != "ok") { //Bei BatteryState != ok
+                                SensorVal[counter] = BattMinLimitTemp - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                                SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorLiveProz[counter] = 0; //Lebensprozent auf 0%
                             };
                             break;
                         default:
@@ -438,7 +450,7 @@ function CreateTrigger() {
 
     for (let x = 0; x < WelcheFunktionVerwenden.length; x++) { //Alle Batteriefunktionen durchlaufen
         on(praefix + BatteryMinLimitDp[x], function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
-        if (logging) log("Reaching Trigger for :"+praefix + BatteryMinLimitDp[x])
+            if (logging) log("Reaching Trigger for :" + praefix + BatteryMinLimitDp[x])
             main(); //Neuzuweisung des geänderten Limits an alle Geräte
         });
     };

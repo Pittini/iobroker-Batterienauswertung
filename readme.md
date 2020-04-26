@@ -89,6 +89,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 26.4.20 (V1.5.4)
+* Fix: Bisher unbekannter Status "ok" (FHEM) integriert.
 #### 14.4.20 (V1.5.3)
 * Fix: Lastmessage wurde unter bestimmten Bedingungen nicht gelöscht.
 * Fix: Trigger für MinLimit Einstellfeld hat bei Änderung nicht ausgelöst.
