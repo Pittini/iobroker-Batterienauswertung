@@ -114,8 +114,8 @@ function Init() {
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
                         case "boolean": //Sensorval ist Bool
                             if (TempVal) { //Bei Lowbat=true
-                                SensorVal[counter] = BattMinLimitTemp - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
-                                SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorVal[counter] = 0; //Batt wird als leer definiert und auf 0 gesetzt
+                                SensorUProz[counter] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
                                 SensorLiveProz[counter] = 0; //Lebensprozent auf 0%
                             }
                             else {
@@ -153,8 +153,8 @@ function Init() {
                                 SensorLiveProz[counter] = 100; //Lebensprozent auf 100%
                             }
                             else if (TempVal != "ok") { //Bei BatteryState != ok
-                                SensorVal[counter] = BattMinLimitTemp - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
-                                SensorUProz[counter] = SensorVal[counter] / Umax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorVal[counter] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                                SensorUProz[counter] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
                                 SensorLiveProz[counter] = 0; //Lebensprozent auf 0%
                             };
                             break;
@@ -384,10 +384,20 @@ function MakeTable() {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + BatteryMinLimit[x].toFixed(2) + "V</td>";
         };
         if (TblShowProzbatCol) {
-            MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorUProz[x].toFixed(1) + "%</td>";
+            if (typeof (SensorUProz[x]) == "number") {
+                MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorUProz[x].toFixed(1) + "%</td>";
+            }
+            else {
+                MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorUProz[x] + "</td>";
+            };
         };
         if (TblShowProzliveCol) {
-            MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x].toFixed(1) + "%</td>";
+            if (typeof (SensorLiveProz[x]) == "number") {
+                MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x].toFixed(1) + "%</td>";
+            }
+            else{
+                MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x] + "</td>";
+            };
         };
         if (TblShowStatusCol) {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorState[x] + "</td>";
@@ -411,13 +421,13 @@ function CreateTrigger() {
             switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
                 case "boolean": //Sensorval ist Bool
                     if (TempVal) { //Bei Lowbat=true
-                        SensorVal[x] = BatteryMinLimit[x] - 0.1; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
-                        SensorUProz[x] = SensorVal[x] / SensorUmax[x] * 100; //Prozentwerte aus Umax und Sensorwert errechnen;
+                        SensorVal[x] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                        SensorUProz[x] = 0; //Prozentwerte aus Umax und Sensorwert errechnen;
                         SensorLiveProz[x] = 0; //Lebensprozent auf 0%
                     }
                     else {
                         SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
-                        SensorUProz[x] = SensorVal[x] / SensorUmax[x] * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                        SensorUProz[x] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
                         SensorLiveProz[x] = 100; //Lebensprozent auf 100%
                     };
                     break;
@@ -437,6 +447,19 @@ function CreateTrigger() {
                             };
 
                             break;
+                        case "string": //Sensorval ist Text
+                            if (TempVal == "ok") {
+                                SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
+                                SensorUProz[x] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorLiveProz[x] = 100; //Lebensprozent auf 100%
+                            }
+                            else if (TempVal != "ok") { //Bei BatteryState != ok
+                                SensorVal[x] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                                SensorUProz[x] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
+                                SensorLiveProz[x] = 0; //Lebensprozent auf 0%
+                            };
+                            break;
+
                         default: // In allen anderen Fällen
                             SensorVal[x] = TempVal; //Spannung ist Wert vom DP
                             SensorUProz[x] = SensorVal[x] / SensorUmax[x] * 100; //Prozentwerte aus Umax und Sensorwert errechnen
