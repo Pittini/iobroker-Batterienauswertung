@@ -395,7 +395,7 @@ function MakeTable() {
             if (typeof (SensorLiveProz[x]) == "number") {
                 MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x].toFixed(1) + "%</td>";
             }
-            else{
+            else {
                 MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorLiveProz[x] + "</td>";
             };
         };
@@ -447,24 +447,25 @@ function CreateTrigger() {
                             };
 
                             break;
-                        case "string": //Sensorval ist Text
-                            if (TempVal == "ok") {
-                                SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
-                                SensorUProz[x] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
-                                SensorLiveProz[x] = 100; //Lebensprozent auf 100%
-                            }
-                            else if (TempVal != "ok") { //Bei BatteryState != ok
-                                SensorVal[x] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
-                                SensorUProz[x] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
-                                SensorLiveProz[x] = 0; //Lebensprozent auf 0%
-                            };
-                            break;
 
                         default: // In allen anderen Fällen
                             SensorVal[x] = TempVal; //Spannung ist Wert vom DP
                             SensorUProz[x] = SensorVal[x] / SensorUmax[x] * 100; //Prozentwerte aus Umax und Sensorwert errechnen
                     };
                     break;
+                case "string": //Sensorval ist Text
+                    if (TempVal == "ok") {
+                        SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
+                        SensorUProz[x] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                        SensorLiveProz[x] = 100; //Lebensprozent auf 100%
+                    }
+                    else if (TempVal != "ok") { //Bei BatteryState != ok
+                        SensorVal[x] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
+                        SensorUProz[x] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
+                        SensorLiveProz[x] = 0; //Lebensprozent auf 0%
+                    };
+                    break;
+
                 default:
             };
             CheckBatterys(x); //Prüfen
