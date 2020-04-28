@@ -89,6 +89,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 28.4.20 (1.5.5)
+* Add: Sonderregel für Namensausgabe bei HM Datenstruktur eingefügt.
 #### 26.4.20 (V1.5.4)
 * Fix: Bisher unbekannter Status "ok" (FHEM) integriert.
 #### 14.4.20 (V1.5.3)

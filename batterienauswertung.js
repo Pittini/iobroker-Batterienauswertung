@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.4 Stand 26.04.2020
+// Batterieüberwachungsskript Version 1.5.5 Stand 28.04.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -55,9 +55,9 @@ let NextExpectedLowBatt = "";
 
 //function CreateStates() {
 //Datenpunkte anlegen in javascript.0.BatterieUeberwachung.
-States[DpCount] = { id: praefix + "AllBatterysOk", initial: true, forceCreation: false, common: { read: true, write: true, name: "Alle Batterien Ok?", type: "boolean", role: "state", def: false } }; //
+States[DpCount] = { id: praefix + "AllBatterysOk", initial: true, forceCreation: false, common: { read: true, write: false, name: "Alle Batterien Ok?", type: "boolean", role: "state", def: false } }; //
 DpCount++;
-States[DpCount] = { id: praefix + "LastMessage", initial: "", forceCreation: false, common: { read: true, write: true, name: "Letzte Warnmeldung", type: "string", role: "state", def: "" } }; //
+States[DpCount] = { id: praefix + "LastMessage", initial: "", forceCreation: false, common: { read: true, write: false, name: "Letzte Warnmeldung", type: "string", role: "state", def: "" } }; //
 DpCount++;
 FillWelcheFunktionVerwenden(); //Vorab Funktionen mit Umax Spannungen einlesen da diese für ID und Namen der MinLimit States benötigt werden
 
@@ -70,9 +70,9 @@ for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
     BatteryMinLimitDp[x] = "BatteryMinLimit_" + dummy;
     DpCount++;
 };
-States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: true, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
+States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: false, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
 DpCount++;
-States[DpCount] = { id: praefix + "OverviewTable", initial: "", forceCreation: false, common: { read: true, write: true, name: "Einfache HTML Übersichtstabelle", type: "string", role: "state", def: "" } }; //
+States[DpCount] = { id: praefix + "OverviewTable", initial: "", forceCreation: false, common: { read: true, write: false, name: "Einfache HTML Übersichtstabelle", type: "string", role: "state", def: "" } }; //
 
 //Alle States anlegen, Main aufrufen wenn fertig
 let numStates = States.length;
@@ -298,8 +298,21 @@ function GetUnit(x) {
 }
 
 function GetParentId(Id) {
-    let parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
+    let parentDevicelId;
+
+    if (Id.indexOf("hm-rpc.0") == -1) { //Wenn kein HM Adapter, eine Ebene zurück
+        parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
+    }
+    else { //Wenn HM dann zwei Ebenen zurück
+        parentDevicelId = Id.split(".").slice(0, -2).join(".");// Id an den Punkten in Array schreiben (split), die 2 letzten Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
+    };
+
+    //if (logging) log("Id= " + Id + " ParentDeviceId= " + parentDevicelId)
     return parentDevicelId
+}
+
+function HmNameCorrection() {
+
 }
 
 function MakeTable() {
