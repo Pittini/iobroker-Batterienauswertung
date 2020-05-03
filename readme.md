@@ -89,10 +89,11 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
-#### 3.5.20 (1.5.6)
+#### 3.5.20 (1.5.7)
 * Add: Sonderregel für Namensausgabe bei shelly Datenstruktur eingefügt.
 * Fix: HM und shelly Strukturen werden jetzt auch außerhalb Instanz 0 berücksichtigt.
 * Fix: Falsche Logmeldung beseitigt.
+* Fix: Falsche Benennung des MinLimit Dps bei Spannungen über 9.9V behoben.
 #### 28.4.20 (1.5.5)
 * Add: Sonderregel für Namensausgabe bei HM Datenstruktur eingefügt.
 #### 26.4.20 (V1.5.4)

@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.6 Stand 3.05.2020
+// Batterieüberwachungsskript Version 1.5.7 Stand 3.05.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -67,7 +67,7 @@ for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
     let VoltInitial = CreateUmaxValueFromString(x) //Extrahierte Zeichen zu Kommazahl wandeln 
     VoltInitial = VoltInitial / 100 * 80; //Initialwert für Limit berechnen
     if (logging) log("InitialSpannung " + x + " gesetzt auf 80%= " + VoltInitial);
-    States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.substr(0, 1) + "." + dummy.substr(1, 1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
+    States[DpCount] = { id: praefix + "BatteryMinLimit_" + dummy, initial: VoltInitial, forceCreation: false, common: { read: true, write: true, name: "Unteres Limit für Warnmeldung bei " + toFloat(dummy.slice(0, dummy.length - 1) + "." + dummy.slice(-1)) + "V Geräten", type: "number", role: "value", unit: "V", def: 2.6 } }; //
     BatteryMinLimitDp[x] = "BatteryMinLimit_" + dummy;
     DpCount++;
 };
@@ -88,7 +88,7 @@ States.forEach(function (state) {
 });
 
 function CreateUmaxValueFromString(x) {
-    let dummy = WelcheFunktionVerwenden[x].slice(FunktionBaseName.length) //Aus der Funktionsbezeichnung die letzten beiden Zeichen extrahieren= z.B. 33
+    let dummy = WelcheFunktionVerwenden[x].slice(FunktionBaseName.length) //Aus der Funktionsbezeichnung die letzten Zeichen extrahieren= z.B. 33
     return toFloat(dummy.slice(0, dummy.length - 1) + "." + dummy.slice(-1)) //Die extrahierten Zeichen zu einer Kommazahl wandeln= z.B. 3.3
 }
 
