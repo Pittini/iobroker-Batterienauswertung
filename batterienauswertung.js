@@ -105,12 +105,12 @@ function Init() {
         for (let z = 0; z < WelcheFunktionVerwenden.length; z++) { //Loop über alle Funktions welche zu WelcheFunktionVerwenden passen
             if (Funktion == WelcheFunktionVerwenden[z]) { //Wenn Function ist WelcheFunktionVerwenden (BatterieSpannung)
                 let Umax = CreateUmaxValueFromString(z) //Batteriesollspannung aus der Funktionsbezeichnung extrahieren
-                let BattMinLimitTemp = getState(praefix + "BatteryMinLimit_" + WelcheFunktionVerwenden[z].slice(FunktionBaseName.length)).val //Temporäres (für den jeweiligen Schleifendurchlauf) MinLimit einlesen
-                if (typeof (BattMinLimitTemp == "string")) { //Falls MinLimit Wert String ist (Bug im jqui Input Widget)
-                    log("BattMinLimit Value is String, trying to convert", "warn");
+                let BattMinLimitTemp = getState(praefix + "BatteryMinLimit_" + WelcheFunktionVerwenden[z].slice(FunktionBaseName.length)).val; //Temporäres (für den jeweiligen Schleifendurchlauf) MinLimit einlesen
+                if (typeof (BattMinLimitTemp == "string")) { //Falls MinLimit Wert String ist zu float wandeln
+                    //log("BattMinLimit Value is String, trying to convert");
                     BattMinLimitTemp = parseFloat(BattMinLimitTemp);
                     if (typeof (BattMinLimitTemp == "number")) {
-                        log("BattMinLimit Value conversion - success", "warn");
+                        if (logging) log("BattMinLimit Value conversion - success");
                     };
                 };
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
@@ -309,7 +309,7 @@ function GetUnit(x) {
 function GetParentId(Id) {
     let parentDevicelId;
 
-    if (Id.indexOf("hm-rpc.0") == -1 && Id.indexOf("shelly.0") == -1) { //Wenn kein HM und kein shelly Adapter, eine Ebene zurück
+    if (Id.indexOf("hm-rpc.") == -1 && Id.indexOf("shelly.") == -1) { //Wenn kein HM und kein shelly Adapter, eine Ebene zurück
         parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     }
     else { //Wenn HM dann zwei Ebenen zurück
