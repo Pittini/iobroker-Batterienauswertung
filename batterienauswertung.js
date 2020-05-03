@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.7 Stand 3.05.2020
+// Batterieüberwachungsskript Version 1.5.8 Stand 3.05.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -263,7 +263,9 @@ function CheckAllBatterysOk() {
 function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn getriggert
     if (logging) log("Reaching CheckBatterys(" + x + ") Val=" + SensorVal[x] + " Limit=" + BatteryMinLimit[x]);
     if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
-        LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
+        //LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
+        LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name;
+        
         Meldung(LastMessage);
         SensorState[x] = "warn";
     }
@@ -281,7 +283,9 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
             if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLimit von " + BatteryMinLimit[x] + " V");
-            LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
+            //LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
+            LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
+            
             SensorState[x] = "warn";
         }
         else {

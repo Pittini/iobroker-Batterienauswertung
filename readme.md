@@ -89,7 +89,7 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
-#### 3.5.20 (1.5.7)
+#### 3.5.20 (1.5.8)
 * Add: Sonderregel für Namensausgabe bei shelly Datenstruktur eingefügt.
 * Fix: HM und shelly Strukturen werden jetzt auch außerhalb Instanz 0 berücksichtigt.
 * Fix: Falsche Logmeldung beseitigt.
