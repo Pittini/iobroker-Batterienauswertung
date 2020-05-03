@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.5.8 Stand 3.05.2020
+// Batterieüberwachungsskript Version 1.5.9 Stand 3.05.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -213,7 +213,9 @@ function Meldung(msg) {
         });
     };
     if (UseMail) {
-        sendTo("email", msg);
+        sendTo("email", {
+            html: msg
+        });
     };
     if (UseAlexa) {
         if (AlexaId != "") setState("alexa2.0.Echo-Devices." + AlexaId + ".Commands.announcement"/*announcement*/, msg);
@@ -265,7 +267,7 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
     if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
         //LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
         LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name;
-        
+
         Meldung(LastMessage);
         SensorState[x] = "warn";
     }
@@ -285,7 +287,7 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
             if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLimit von " + BatteryMinLimit[x] + " V");
             //LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name + LastMessageSeparator;
             LastMessage = LastMessage + "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
-            
+
             SensorState[x] = "warn";
         }
         else {
