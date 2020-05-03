@@ -89,6 +89,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 3.5.20 (1.5.6)
+* Add: Sonderregel für Namensausgabe bei shelly Datenstruktur eingefügt.
 #### 28.4.20 (1.5.5)
 * Add: Sonderregel für Namensausgabe bei HM Datenstruktur eingefügt.
 #### 26.4.20 (V1.5.4)

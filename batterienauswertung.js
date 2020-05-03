@@ -1,8 +1,9 @@
-// Batterieüberwachungsskript Version 1.5.5 Stand 28.04.2020
+// Batterieüberwachungsskript Version 1.5.6 Stand 3.05.2020
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
 //Vorraussetzungen: Den Gerätechannels müssen Räume, sowie die Funktion "BatterieSpannung_xx" für jeden entsprechenden Batteriespannungs Datenpunkt zugewiesen sein.
+// Nach der Zuweisung unbedingt den JS Adpter neu starten!
 
 //Grund Einstellungen
 const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DPs
@@ -105,6 +106,13 @@ function Init() {
             if (Funktion == WelcheFunktionVerwenden[z]) { //Wenn Function ist WelcheFunktionVerwenden (BatterieSpannung)
                 let Umax = CreateUmaxValueFromString(z) //Batteriesollspannung aus der Funktionsbezeichnung extrahieren
                 let BattMinLimitTemp = getState(praefix + "BatteryMinLimit_" + WelcheFunktionVerwenden[z].slice(FunktionBaseName.length)).val //Temporäres (für den jeweiligen Schleifendurchlauf) MinLimit einlesen
+                if (typeof (BattMinLimitTemp == "string")) { //Falls MinLimit Wert String ist (Bug im jqui Input Widget)
+                    log("BattMinLimit Value is String, trying to convert", "warn");
+                    BattMinLimitTemp = parseFloat(BattMinLimitTemp);
+                    if (typeof (BattMinLimitTemp == "number")) {
+                        log("BattMinLimit Value conversion - success", "warn");
+                    };
+                };
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
@@ -280,7 +288,8 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
             if (SensorState[x] != "info") SensorState[x] = "ok";
         };
     };
-    CheckAllBatterysOk()
+    CheckAllBatterysOk();
+    log("Lastmessage=" + LastMessage);
     LastMessage = LastMessage.substr(0, LastMessage.length - LastMessageSeparator.length); //letzten <br> Umbruch wieder entfernen
     if (LastMessage != "") Meldung(LastMessage); // Wenn Lastmessage nicht leer, Nachricht ausgeben
 }
@@ -300,19 +309,14 @@ function GetUnit(x) {
 function GetParentId(Id) {
     let parentDevicelId;
 
-    if (Id.indexOf("hm-rpc.0") == -1) { //Wenn kein HM Adapter, eine Ebene zurück
+    if (Id.indexOf("hm-rpc.0") == -1 && Id.indexOf("shelly.0") == -1) { //Wenn kein HM und kein shelly Adapter, eine Ebene zurück
         parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     }
     else { //Wenn HM dann zwei Ebenen zurück
-        parentDevicelId = Id.split(".").slice(0, -2).join(".");// Id an den Punkten in Array schreiben (split), die 2 letzten Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
+        parentDevicelId = Id.split(".").slice(0, -2).join(".");// Id an den Punkten in Array schreiben (split), die 2 letzten Elemente von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     };
-
     //if (logging) log("Id= " + Id + " ParentDeviceId= " + parentDevicelId)
     return parentDevicelId
-}
-
-function HmNameCorrection() {
-
 }
 
 function MakeTable() {
@@ -394,6 +398,7 @@ function MakeTable() {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorVal[x].toFixed(2) + "V</td>";
         };
         if (TblShowUlimitCol) {
+            //log(BatteryMinLimit[x]+" hat type="+typeof(BatteryMinLimit[x]))
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + BatteryMinLimit[x].toFixed(2) + "V</td>";
         };
         if (TblShowProzbatCol) {
@@ -488,6 +493,9 @@ function CreateTrigger() {
     for (let x = 0; x < WelcheFunktionVerwenden.length; x++) { //Alle Batteriefunktionen durchlaufen
         on(praefix + BatteryMinLimitDp[x], function (dp) { //Trigger erstellen und auslösen wenn min Limit geändert wurde. Dann erneute Komplettprüfung aller Batteriestände
             if (logging) log("Reaching Trigger for :" + praefix + BatteryMinLimitDp[x])
+            if (typeof (dp.state.val) != "number") {
+                log("MinLimit Wert keine Nummer, sondern " + typeof (dp.state.val), "warn");
+            };
             main(); //Neuzuweisung des geänderten Limits an alle Geräte
         });
     };
