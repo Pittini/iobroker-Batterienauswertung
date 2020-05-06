@@ -1,13 +1,14 @@
-# Generisches Script um die Batteriestände beliebig vieler Geräte, auch mit unterschiedlichen Spannungen und LowLimit, zu überwachen
+# Generisches Script um die Batteriestände beliebig vieler Geräte, auch mit unterschiedlichen Spannungen und LowLimit, zu überwachen und bereits "tote" Geräte zu erkennen.
 
 
 # Features
 * Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, eine Prozentangabe oder zumindest Lowbat zur Verfügung stellen.
 * Es können simultan Geräte mit unterschiedlichen Spannungen überwacht werden, z.B. 1,5V und 3V, auch Geräte welche nur LowBat true/false bereitstellen können berücksichtigt werden ebenso wie Prozentwerte in zwei Varianten.
+* Zeigt Geräte welche innerhalb einer einstellbaren Zeitspanne keine Aktualisierung mehr gesendet haben (Batterie schon leer oder diconnect)
 * Möglichkeit eine Meldung/Ansage via Log/Mail/Alexa/Telegram bei unterschreiten einer einstellbaren Limitspannung auszugeben.
 * permanente Anzeige des Gerätes mit der niedrigsten Spannung (außer Lowbat, da hier die Info nicht verfügbar ist).
 * Kleines Set aus vordefinierten Standart Vis Widgets (Basic-String, Basic-Bool, Html) zur leichteren Integration, bzw. als Beispiel für eigene Vis Projekte.
-* Einfache, dynamisch erstellte Html Übersichtstabelle mit einstellmöglichkeit welche Spalten angezeigt werden sollen
+* Einfache, dynamisch erstellte Html Übersichtstabelle mit Einstellmöglichkeit welche Spalten angezeigt werden sollen.
 * Nach Installation keine Skriptänderungen mehr nötig um neue Geräte hinzuzufügen.
 
 # Installation
@@ -35,21 +36,23 @@ Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivi
 7. Zeile 11-14 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
 8. Skript speichern.
 9. Skript starten.
-10. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 5 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
+10. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 7 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
    ![batterienauswertungtut7.jpg](/admin/batterienauswertungtut7.jpg)  
 Diese Datenpunkte haben folgenden Sinn/Bedeutung:
     1. **AllBatteriesOk** - Summenauswertung über alle Batterien - könnt Ihr z.B. in Vis verwenden um Farbwechsel für Icons zu erstellen (siehe Demo Widgets).
-    2. **BatteryMinLimit_xx** - Einstellfeld/er für das min. Limit bei Batterien der in xx angegebenen Spannung/en (z.B. "BatteryMinLimit_30"). Dieses Feld gibt es mindestens einmal, je nach Setup aber auch mehrmals, wobei sich immer die Zahl xx ändert. Vom Skript werden hier default Werte gesetzt welche 80% der max. Spannung betragen, können aber von Euch frei angepasst werden da dieser Wert auch etwas Geräteabhängig ist.
-    3. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
-    4. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
-    5. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
- 11. Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
+    2. **EmptyBatCount** - Zeigt Anzahl der Batterien unter min. Limit.
+    3. **DeadDeviceCount** - Zeigt Geräte welche seit Zeit x (Einstellbar) keine Aktualisierung mehr gesendet haben.
+    4. **BatteryMinLimit_xx** - Einstellfeld/er für das min. Limit bei Batterien der in xx angegebenen Spannung/en (z.B. "BatteryMinLimit_30"). Dieses Feld gibt es mindestens einmal, je nach Setup aber auch mehrmals, wobei sich immer die Zahl xx ändert. Vom Skript werden hier default Werte gesetzt welche 80% der max. Spannung betragen, können aber von Euch frei angepasst werden da dieser Wert auch etwas Geräteabhängig ist.
+    5. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
+    6. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
+    7. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
+ 1.  Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
     
 
 # Demo Widget Satz für Vis
 viswidgets.txt ist ein kleiner Demowidgetsatz welche die relevanten Infos des Skriptes visualisiert.  
 Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die Batterie Infos von "ganz einfach" mit nur einem Icon, bis zur umfangreichen Übersichtstabelle darstellen können.
-1. Ein simples Icon welches grün insgesamt volle Batterien anzeigt, rot blinkend eine zu wechselnde Batterie.  
+1. Ein simples Icon welches grün insgesamt volle Batterien anzeigt, rot blinkend eine (oder mehrere) zu wechselnde Batterie/n.  
 ![widgetstut1.png](/admin/widgetstut1.png) ![widgetstut2.png](/admin/widgetstut2.png) 
 2. Eine etwas ausführlichere Darstellung, bestehend aus:  
     * links ein Batteriesymbol mit grünem Hintergrund, welches bei Limitunterscheidung rot blinkt. 
@@ -82,13 +85,17 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
     * Die "%live" Spalte zeigt die prozentuale restliche Lebensdauer des Gerätes an. Dies ist auch der %Wert welcher beim mi-home Adapter ausgegeben wird. Beispiel: Im Gerät ist eine 3V Batterie verbaut. Das Gerät fällt aus bei 2V, verbleibt ein "Spannungsfenster" von 1V. Hat die Batterie nun den aktuellen Stand von 2.5V, so würde dies ein %live von 50% ergeben, während die Batteriekapazität bei 75% stehen würde. Die ist quasi der Wert wie Ihr ihn z.B vom Handy kennt. das Gerät fällt bei 0% aus, da hat die Batterie aber durchaus noch zig% der Nennspannung.
     * Spalte "Status" zeigt den vom Skript ermittelten Status der Batterie, welcher auch für die Anzeige der Farbbalken verwendet wird in Textform.
 
-* Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 21-26 ändern. Es sind sowohl benannte Farben z.B. "rot" als auch Hexwerte mit vorangestelltem # , z.B. "#ff0000" erlaubt. Eine Übersicht benannter Farben und Hex-Werte findet Ihr z.B. [hier](https://wiki.selfhtml.org/wiki/Grafik/Farbpaletten).
+* Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 21-26 ändern. Es sind sowohl benannte Farben z.B. "red" als auch Hexwerte mit vorangestelltem # , z.B. "#ff0000" erlaubt. Eine Übersicht benannter Farben und Hex-Werte findet Ihr z.B. [hier](https://wiki.selfhtml.org/wiki/Grafik/Farbpaletten).
 
 
 ---
 
 
 # Changelog
+#### 6.5.20 (1.6.0)
+* Add: Datenpunkt EmptyBatCount - Zeigt Anzahl der Batterien unter min. Limit.
+* Add: Datenpunkt DeadDeviceCount - Zeigt Geräte welche seit Zeit x (Einstellbar) keine Aktualisierung mehr gesendet haben.
+* Add: Überprüft zyklisch nach Geräten welche seit Zeit x (Einstellbar) keine Aktualisierung mehr gesendet haben. Dies wird mit zusätzlicher Farbe (default Grau) angezeigt. Hierzu zusätzlichen, neuen, Status "dead" eingeführt.
 #### 3.5.20 (1.5.9)
 * Add: Sonderregel für Namensausgabe bei shelly Datenstruktur eingefügt.
 * Fix: HM und shelly Strukturen werden jetzt auch außerhalb Instanz 0 berücksichtigt.
