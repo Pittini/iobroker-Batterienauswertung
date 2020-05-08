@@ -92,6 +92,9 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 8.5.20 (1.6.1)
+* Fix: Bei nicht vorhandenem Raum wird statt Skriptfehler nur "Nicht zugewiesen" in der Raumspalte vermerkt.
+* Fix: Fehler behoben welcher einmal als "tot" markierte Geräte auch bei Aktualisierung nicht mehr "wiederbelebte".
 #### 6.5.20 (1.6.0)
 * Add: Datenpunkt EmptyBatCount - Zeigt Anzahl der Batterien unter min. Limit.
 * Add: Datenpunkt DeadDeviceCount - Zeigt Geräte welche seit Zeit x (Einstellbar) keine Aktualisierung mehr gesendet haben.

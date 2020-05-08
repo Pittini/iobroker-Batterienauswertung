@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.6.0 Stand 6.05.2020 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+// Batterieüberwachungsskript Version 1.6.1 Stand 8.05.2020 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -248,6 +248,9 @@ function CheckDeadBatt() {
             //log("Sensor " + x + " ist tot")
             SensorState[x] = "dead"; //Status auf tot setzen
             DeadDeviceCount++; //Zähler ehöhen
+        }
+        else if (SensorState[x] == "dead") { //Wenn Sensor als tot gelistet, aber wieder aktualisiert, Status prüfen
+            CheckBatterys[x];
         };
     };
     setState(praefix + "DeadDeviceCount", DeadDeviceCount);
@@ -293,6 +296,8 @@ function CheckAllBatterysOk() {
             EmptyBatCount++; //Alle Sensoren zählen welche das Batt min Limit unterschritten haben
         };
     };
+
+    if (DeadDeviceCount > 0) AllBatterysOk = false;
 
     setState(praefix + "EmptyBatCount", EmptyBatCount);
     setState(praefix + "AllBatterysOk", AllBatterysOk);
@@ -346,6 +351,7 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
 
 function GetRoom(x) {  // Raum eines Gerätes ermitteln
     let room = getObject(Sensor[x], 'rooms').enumNames[0];
+    if (room == undefined) room = "Nicht zugewiesen";
     if (typeof room == 'object') room = room.de;
     room = room.replace(/_/g, " "); //Unterstriche durch Leerzeichen ersetzen
     return room;
