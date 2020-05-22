@@ -4,7 +4,7 @@
 # Features
 * Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, eine Prozentangabe oder zumindest Lowbat zur Verfügung stellen.
 * Es können simultan Geräte mit unterschiedlichen Spannungen überwacht werden, z.B. 1,5V und 3V, auch Geräte welche nur LowBat true/false bereitstellen können berücksichtigt werden ebenso wie Prozentwerte in zwei Varianten.
-* Zeigt Geräte welche innerhalb einer einstellbaren Zeitspanne keine Aktualisierung mehr gesendet haben (Batterie schon leer oder diconnect)
+* Zeigt Geräte welche innerhalb einer einstellbaren Zeitspanne keine Aktualisierung mehr gesendet haben (Batterie schon leer oder diconnect).
 * Möglichkeit eine Meldung/Ansage via Log/Mail/Alexa/Telegram bei unterschreiten einer einstellbaren Limitspannung auszugeben.
 * permanente Anzeige des Gerätes mit der niedrigsten Spannung (außer Lowbat, da hier die Info nicht verfügbar ist).
 * Kleines Set aus vordefinierten Standart Vis Widgets (Basic-String, Basic-Bool, Html) zur leichteren Integration, bzw. als Beispiel für eigene Vis Projekte.
