@@ -1,4 +1,4 @@
-// Batterieüberwachungsskript Version 1.6.1 Stand 8.05.2020 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+// Batterieüberwachungsskript Version 1.6.2 Stand 26.05.2020 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 
 //WICHTIG!!!
@@ -8,7 +8,7 @@
 
 //Grund Einstellungen
 const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DPs
-const logging = true; //Logging aktivieren?
+const logging = false; //Logging aktivieren?
 const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
 const UseMail = false; // Sollen Nachrichten via Mail gesendet werden?
@@ -245,12 +245,12 @@ function CheckDeadBatt() {
     DeadDeviceCount = 0;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if ((getState(Sensor[x]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) { //Wenn letzte Aktualisierung + Karrenzzeit kleiner aktuelle Zeit
-            //log("Sensor " + x + " ist tot")
+            if (SensorState[x]!="dead") log("Sensor " + x + " ist tot");
             SensorState[x] = "dead"; //Status auf tot setzen
             DeadDeviceCount++; //Zähler ehöhen
         }
         else if (SensorState[x] == "dead") { //Wenn Sensor als tot gelistet, aber wieder aktualisiert, Status prüfen
-            CheckBatterys[x];
+            CheckBatterys(x);
         };
     };
     setState(praefix + "DeadDeviceCount", DeadDeviceCount);

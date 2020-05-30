@@ -92,6 +92,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 26.5.20 (1.6.2)
+* Fix: Resetfehler bei "toten" Geräten behoben.
 #### 8.5.20 (1.6.1)
 * Fix: Bei nicht vorhandenem Raum wird statt Skriptfehler nur "Nicht zugewiesen" in der Raumspalte vermerkt.
 * Fix: Fehler behoben welcher einmal als "tot" markierte Geräte auch bei Aktualisierung nicht mehr "wiederbelebte".
