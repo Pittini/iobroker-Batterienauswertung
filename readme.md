@@ -92,6 +92,9 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 17.6.20 (1.6.3)
+* Fix: Berechnung für % und Option ProzMeansLive korrigiert.
+* Change: Gelber Infobalken bezieht sich nun auf Live% und nicht mehr Batterie%.
 #### 26.5.20 (1.6.2)
 * Fix: Resetfehler bei "toten" Geräten behoben.
 #### 8.5.20 (1.6.1)
