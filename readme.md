@@ -1,5 +1,8 @@
 # Generisches Script um die Batteriestände beliebig vieler Geräte, auch mit unterschiedlichen Spannungen und LowLimit, zu überwachen und bereits "tote" Geräte zu erkennen.
 
+**If you like it, please consider a donation:**
+                                                                          
+[![paypal](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=GGF786JBJNYRN&source=url) 
 
 # Features
 * Kann beliebig viele Geräte überwachen welche einen Datenpunkt mit der Batteriespannung, eine Prozentangabe oder zumindest Lowbat zur Verfügung stellen.
