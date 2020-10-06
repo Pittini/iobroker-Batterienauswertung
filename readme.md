@@ -95,7 +95,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
-#### 18.6.20 (1.6.4)
+#### 04.10.20 (1.6.5)
+* Fix: Fehler bei (noch) leeren Spannungs- oder Prozent-angaben behoben.
 * Add: Option hinzugefügt um auch über soeben "gestorbene" Geräte per Nachricht informiert zu werden. Option in den Einstellungen deaktivierbar.
 #### 17.6.20 (1.6.3)
 * Fix: Berechnung für % und Option ProzMeansLive korrigiert.
