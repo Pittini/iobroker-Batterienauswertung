@@ -96,6 +96,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 # Changelog
 #### 01.11.20 (1.6.6)
+* Fix: lowbat Geräte werden wieder korrekt angezeigt.
+#### 01.11.20 (1.6.6)
 * Fix: Namenserkennung erweitert um Deconz und HMIP. (mrFenyx)
 #### 04.10.20 (1.6.5)
 * Fix: Fehler bei (noch) leeren Spannungs- oder Prozent-angaben behoben.
