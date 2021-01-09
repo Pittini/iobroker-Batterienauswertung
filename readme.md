@@ -16,17 +16,19 @@
 
 # Installation
 1. Unter Aufzählungen > Funktionen, eine oder mehrere Funktion/en hinzufügen - wieviele ist abhängig davon wieviele verschiedene Batteriespannungen ihr überwachen wollt. 
-Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte, "BatterieSpannung_120" für 12V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.   
+Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte, "BatterieSpannung_120" für 12V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.  
+2. Zusätzlich legt ihr die Funktion "DeadCheck" an, hiermit könnt Ihr EINEN anderen Datenpunkt innerhalb der gleichen Channelroot zur Ausfallüberwachung hinzufügen. Sinnvoll für Devices welchen den Batteriedatenpunkt sehr selten aktualisieren (HM z.B.).
+   
 ![batterienauswertungtut2.jpg](/admin/batterienauswertungtut2.jpg) 
 Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivieren:  
 ![batterienauswertungtut3.jpg](/admin/batterienauswertungtut3.jpg) 
 
 
-2. Solltet Ihr noch keine Räume definiert haben, so holt dies bitte jetzt unter Aufzählungen > Räume nach.
-3. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuzuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
+1. Solltet Ihr noch keine Räume definiert haben, so holt dies bitte jetzt unter Aufzählungen > Räume nach.
+2. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuzuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
-4. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es sinnvoll die JS Instanz neu zu starten da diese die Änderungen sonst nicht mitbekommt, was dann zu Skriptfehlern führt**.
-5. Nun den Inhalt der Skriptdatei [batterienauswertung-V1.6.7.js](/batterienauswertung-V1.6.7.js) in ein neues JS Projekt kopieren.  
+5. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es sinnvoll die JS Instanz neu zu starten da diese die Änderungen sonst nicht mitbekommt, was dann zu Skriptfehlern führt**.
+6. Nun den Inhalt der Skriptdatei [batterienauswertung-V1.6.7.js](/batterienauswertung-V1.6.7.js) in ein neues JS Projekt kopieren.  
    1. 
    ![batterienauswertungtut4.jpg](/admin/batterienauswertungtut4.jpg) 
    2. Wie Ihr das Skript nennt bleibt Euch überlassen, "BattUeberwachung" ist als Beispiel zu sehen. Ihr solltet jedoch darauf achten dass das Skript im Ordner "common" erstellt wird.
@@ -35,11 +37,11 @@ Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivi
    ![batterienauswertungtut6.jpg](/admin/batterienauswertungtut6.jpg) 
 
 
-6. Nun Zeile 8-24 kontrollieren und bei Bedarf anpassen, wofür die einzelnen Zeilen gut sind, steht jeweils im Kommentar rechts daneben. 
-7. Zeile 11-14 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
-8. Skript speichern.
-9. Skript starten.
-10. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 7 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
+7. Nun Zeile 8-24 kontrollieren und bei Bedarf anpassen, wofür die einzelnen Zeilen gut sind, steht jeweils im Kommentar rechts daneben. 
+8. Zeile 11-14 wäre der richtige Ort falls Telegram, Alexa etc. die Meldungen ausgeben sollen. Dann hier die entsprechenden Daten eintragen und die jeweilige Funktion aktivieren.
+9. Skript speichern.
+10. Skript starten.
+11. In den Objekten, unter Javascript.0.BatterieUeberwachung sollte es jetzt mind. 7 Datenpunkte geben - wieviele genau, ist abhängig davon wieviele verschiedene Spannungen ihr überwacht, da für jede zu Überwachende Spannung autom. ein MinLimit Datenpunkt, z.B. "BatteryMinLimit_30" angelegt wird. 
    ![batterienauswertungtut7.jpg](/admin/batterienauswertungtut7.jpg)  
 Diese Datenpunkte haben folgenden Sinn/Bedeutung:
     1. **AllBatteriesOk** - Summenauswertung über alle Batterien - könnt Ihr z.B. in Vis verwenden um Farbwechsel für Icons zu erstellen (siehe Demo Widgets).
@@ -49,7 +51,7 @@ Diese Datenpunkte haben folgenden Sinn/Bedeutung:
     5. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
     6. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
     7. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
- 1.  Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
+ 12.  Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
     
 
 # Demo Widget Satz für Vis
@@ -95,6 +97,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 08.01.21 (1.7.0)
+* Add: Zweite Funktion und Prüfstufe für den "deadcheck" hinzugefügt. Es wird zuerst, wie auch bisher, geprüft ob der Batteriedatenpunkt aktualisiert wurd. Sollte diese Prüfung ein "dead" ergeben, wird in der gesammten channelroot nach der Funktion "DeadCheck" gesucht. Wurde diese einem beliebigen anderen Datenpunkt zugewiesen, so wird nun dieser Datenpunkt auf aktualisierug geprüft. Erst wenn auch diese ein "dead" ergibt, wird das Gerät als tot gemeldet.
 #### 01.11.20 (1.6.6)
 * Fix: lowbat Geräte werden wieder korrekt angezeigt.
 #### 01.11.20 (1.6.6)
