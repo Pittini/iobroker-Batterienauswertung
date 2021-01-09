@@ -129,7 +129,7 @@ function Init() {
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
-                    // if (typeof (TempVal) == undefined || typeof (TempVal) == null || TempVal == "") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
+                    if (typeof (TempVal) == undefined ) TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
                     if (logging) log("existsState(Sensor[counter])=" + existsState(Sensor[counter]) + " typeof (getState(Sensor[counter]).val)=" + typeof (getState(Sensor[counter]).val) + " getState(Sensor[counter]).val=" + getState(Sensor[counter]).val)
 
                     TempUnit = GetUnit(counter);
