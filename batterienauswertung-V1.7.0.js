@@ -1,4 +1,4 @@
-const Version = "1.7.0"; // Batterieüberwachungsskript Stand 08.01.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.7.0"; // Batterieüberwachungsskript Stand 09.01.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -21,6 +21,7 @@ const UsePopUp = false // Soll PopUp angezeigt werden? Funktion des Authors, sol
 const ProzMeansLive = true; //Zeigen Prozentwerte des Gerätedatenpunktes Batteriekapazität oder restliche Lebensdauer?
 let DeadIsAfter = 360; // In Minuten - Zeit nach der ein Gerät als "tot" gewertet wird wenn keine Statusänderung (ts) erfolgte.
 const NotifyDeadDevices = true; //Sollen auch "tote" Geräte gemeldet werden?
+const DeconzNameFromDP=false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
 
 //Tabellen Einstellungen
 const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
@@ -418,7 +419,6 @@ function GetUnit(x) {
     return unit;
 }
 
-
 function GetParentId(Id) {
     let parentDevicelId;
     if (Id.indexOf("deconz.") > -1 || Id.indexOf("hm-rpc.") > -1 || Id.indexOf("shelly.") > -1) { //Wenn deconz, hm-rpc oder shelly dann zwei Ebenen zurück
@@ -430,7 +430,7 @@ function GetParentId(Id) {
     else { //Wenn kein deconz, kein HM und kein shelly Adapter, eine Ebene zurück
         parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     };
-    // if (Id.indexOf("deconz.") > -1) parentDevicelId = Id;
+    if (DeconzNameFromDP && Id.indexOf("deconz.") > -1) parentDevicelId = Id;
     //if (logging) log("Id= " + Id + " ParentDeviceId= " + parentDevicelId)
     return parentDevicelId;
 }
