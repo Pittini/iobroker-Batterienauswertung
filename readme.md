@@ -28,7 +28,7 @@ Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivi
 2. Nun allen gewünschten Sensoren einen Raum und dem Spannungsdatenpunkt die zur Gerätespannung passende Funktion zuzuweisen. Bitte beachtet dass Räume immer dem gesamten Channel zugewiesen werden und Funktionen nur für dem jeweiligen Datenpunkt, siehe Bild:  
 ![batterienauswertungtut1.jpg](/admin/batterienauswertungtut1.jpg) 
 5. **Nach der Zuweisung, bzw. dem anlegen neuer Aufzählungspunkte ist es sinnvoll die JS Instanz neu zu starten da diese die Änderungen sonst nicht mitbekommt, was dann zu Skriptfehlern führt**.
-6. Nun den Inhalt der Skriptdatei [batterienauswertung-V1.6.7.js](/batterienauswertung-V1.7.0.js) in ein neues JS Projekt kopieren.  
+6. Nun den Inhalt der Skriptdatei [batterienauswertung-V1.7.0.js](/batterienauswertung-V1.7.0.js) in ein neues JS Projekt kopieren.  
    1. 
    ![batterienauswertungtut4.jpg](/admin/batterienauswertungtut4.jpg) 
    2. Wie Ihr das Skript nennt bleibt Euch überlassen, "BattUeberwachung" ist als Beispiel zu sehen. Ihr solltet jedoch darauf achten dass das Skript im Ordner "common" erstellt wird.
