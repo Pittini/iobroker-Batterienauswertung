@@ -1,4 +1,4 @@
-const Version = "1.7.0"; // Batterieüberwachungsskript Stand 09.01.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.7.0"; // Batterieüberwachungsskript Stand 10.01.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -8,7 +8,7 @@ log("starting Batterieüberwachung V." + Version);
 
 //Grund Einstellungen
 const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DPs
-const logging = true; //Logging aktivieren?
+const logging = false; //Logging aktivieren?
 const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const DeadFunktionName = "DeadCheck"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
@@ -21,7 +21,7 @@ const UsePopUp = false // Soll PopUp angezeigt werden? Funktion des Authors, sol
 const ProzMeansLive = true; //Zeigen Prozentwerte des Gerätedatenpunktes Batteriekapazität oder restliche Lebensdauer?
 let DeadIsAfter = 360; // In Minuten - Zeit nach der ein Gerät als "tot" gewertet wird wenn keine Statusänderung (ts) erfolgte.
 const NotifyDeadDevices = true; //Sollen auch "tote" Geräte gemeldet werden?
-const DeconzNameFromDP=false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
+const DeconzNameFromDP = false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
 
 //Tabellen Einstellungen
 const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
@@ -129,9 +129,9 @@ function Init() {
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
                     TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
-                    if (typeof (TempVal) == undefined ) TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
+                    if (typeof (TempVal) == "undefined") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
                     if (logging) log("existsState(Sensor[counter])=" + existsState(Sensor[counter]) + " typeof (getState(Sensor[counter]).val)=" + typeof (getState(Sensor[counter]).val) + " getState(Sensor[counter]).val=" + getState(Sensor[counter]).val)
-
+                    SensorState[counter] = "";
                     TempUnit = GetUnit(counter);
                     if (logging) log("Tempval=" + TempVal + " TempUnit=" + TempUnit + " TypeOf=" + typeof (TempVal))
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
@@ -251,7 +251,6 @@ function CheckDeadBatt() {
     if (logging) log("Reaching CheckDeadBatt()");
     let jetzt = new Date().getTime();
     let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
-    let IsDead = false;
     DeadDeviceCount = 0;
     let members
     for (let y in Funktionen) {        // loop ueber alle Funktionen
@@ -262,56 +261,69 @@ function CheckDeadBatt() {
         };
     };
 
-
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (existsState(Sensor[x])) {
+            let ParentDeviceId = GetParentId(Sensor[x]);
+            let SecondCheckFound = false;
+            let IsDead = false;
+
+            //First check at Battery Datapoint
             if ((getState(Sensor[x]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) { //Wenn letzte Aktualisierung + Karrenzzeit kleiner aktuelle Zeit = Sensor möglicher weise tot, 2te Prüfung einleiten
-
-                let ParentDeviceId = GetParentId(Sensor[x]);
-                let SecCheckFound = false;
+                IsDead = true;
                 if (logging) log("Device " + ParentDeviceId + " is possibly dead, searching for second check");
+            };
 
+            //Second check at Extra Function Datapoint DeadCheck
+            if (IsDead) {
                 for (let z in members) {
-                    if (!SecCheckFound) {
+                    if (!SecondCheckFound) {
                         if (members[z].includes(ParentDeviceId)) {    //Jetzt prüfen ob weitere Funktion DeadCheck innerhalb des Channels
-
-                            SecCheckFound = true;
+                            SecondCheckFound = true;
                             if (logging) log("Device " + ParentDeviceId + " has second check, now checking");
                             if (logging) log("z=" + z + " Device " + ParentDeviceId + " second check at  " + members[z]);
                             if ((getState(members[z]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) {
-                                if (logging) log(ParentDeviceId + " seems to be really dead");
-                                IsDead = true;
+                                if (logging) log("Second check failed, " + ParentDeviceId + " seems to be really dead");
+                                //  IsDead = true;
                             } else {
                                 if (logging) log(ParentDeviceId + " is not dead at second checkpoint");
                                 IsDead = false;
                             };
-                        } else {
-                            IsDead = true;
-                        };
-                    };
-                };
-                if (logging && !SecCheckFound) log("No second checkpoint found for " + ParentDeviceId + " so its really dead");
+                        }
 
-                if (IsDead) {
-                    if (logging) log("Jim...he's dead")
-                    if (SensorState[x] != "dead") { //Wenn Sensor bei letzter Prüfung noch nicht tot.
-                        if (NotifyDeadDevices) {
-                            Meldung("Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(ParentDeviceId).common.name);
-                        };
                     };
-                    SensorState[x] = "dead"; //Status auf tot setzen
-                    DeadDeviceCount++; //Zähler ehöhen
                 };
-            }
-            else if (SensorState[x] == "dead") { //Wenn Sensor als tot gelistet, aber wieder aktualisiert, Status prüfen
-                CheckBatterys(x);
+                if (logging && !SecondCheckFound && IsDead) log("No second checkpoint found for " + ParentDeviceId + " so its really dead");
+            };
+
+            //Reaction after checks
+            if (IsDead) {
+                if (logging) log("Jim...he's dead")
+                if (SensorState[x] != "dead") { //Wenn Sensor bei vorheriger Prüfung noch nicht tot, Meldung absetzen.
+                    if (NotifyDeadDevices) {
+                        Meldung("Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(ParentDeviceId).common.name);
+                    };
+                };
+                SensorState[x] = "dead"; //Status auf tot setzen
+                DeadDeviceCount++; //Zähler ehöhen
+            } else {
+                if (SensorState[x] == "dead") { //Wenn Sensor bisher als tot gelistet, aber wieder aktualisiert, Status prüfen
+                    SensorState[x] = "ok"
+                    CheckBatterys(x);
+
+                };
             };
         } else {
             log("CheckDeadBatt() State for " + x + " doesnt exists");
         };
+        //  log("x=" + x + "Sensor " + Sensor[x] + " IsDead=" + IsDead + " Sensorstate=" + SensorState[x]);
+
+        if (x == Sensor.length - 1) { //Ausführung erst wenn Schleife komplett durch ist (async)
+            setState(praefix + "DeadDeviceCount", DeadDeviceCount);
+
+            MakeTable();
+        };
     };
-    setState(praefix + "DeadDeviceCount", DeadDeviceCount);
-    MakeTable();
+
 }
 
 function Ticker() {
