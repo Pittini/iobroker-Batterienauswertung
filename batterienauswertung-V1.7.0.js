@@ -23,6 +23,31 @@ let DeadIsAfter = 360; // In Minuten - Zeit nach der ein Gerät als "tot" gewert
 const NotifyDeadDevices = true; //Sollen auch "tote" Geräte gemeldet werden?
 const DeconzNameFromDP = false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
 
+//Variablen für Pushover
+const UsePushover = true; //Sollen Nachrichten via Pushover versendet werden?
+const PushoverDevice = 'All'; //Welches Gerät soll die Nachricht bekommen
+const prio_LOWBAT = 0; //Pushoverinstanz welche genutzt werden soll angeben
+let _prio;
+let _titel;
+let _message;
+
+function send_pushover(PushoverDevice, _message, _titel, _prio) {
+    var pushover_Instanz = 'pushover.0';
+    if (_prio === 0) { pushover_Instanz = 'pushover.0' }
+    else if (_prio == 1) { pushover_Instanz = 'pushover.1' }
+    else if (_prio == 2) { pushover_Instanz = 'pushover.2' }
+    else { pushover_Instanz = 'pushover.3' }
+    sendTo(pushover_Instanz, {
+        device: PushoverDevice,
+        message: _message,
+        title: _titel,
+        priority: 0,
+        retry: 60,
+        expire: 600,
+        html: 1
+    });
+}
+
 //Tabellen Einstellungen
 const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
 const TblInfoBgColor = "#ffc107"; //Hintergrundfarbe für Batteriestatus Info, also die leerste Batterie welche noch nicht das Limit unterschreitet
@@ -244,6 +269,12 @@ function Meldung(msg) {
     if (logging) log(msg);
     if (UseEventLog) WriteEventLog(msg);
     if (UsePopUp) ShowPopUp(true, msg, "Batterys", "red");
+    if (UsePushover) {
+        _prio = prio_LOWBAT;
+        _titel = 'Batterien überprüfen';
+        _message = msg;
+        send_pushover(PushoverDevice, _message, _titel, _prio);
+    }
     setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage schreiben
 }
 
