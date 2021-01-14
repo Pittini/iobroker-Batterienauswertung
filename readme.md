@@ -97,6 +97,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 14.01.21 (1.7.1)
+* Add: Pushover zu Messaging Optionen hinzugefügt (TheBermud)
 #### 08.01.21 (1.7.0)
 * Add: Zweite Funktion und Prüfstufe für den "deadcheck" hinzugefügt. Es wird zuerst, wie auch bisher, geprüft ob der Batteriedatenpunkt aktualisiert wurd. Sollte diese Prüfung ein "dead" ergeben, wird in der gesamten channelroot nach der Funktion "DeadCheck" gesucht. Wurde diese einem beliebigen anderen Datenpunkt zugewiesen, so wird nun dieser Datenpunkt auf Aktualisierug geprüft. Erst wenn auch diese ein "dead" ergibt, wird das Gerät als tot gemeldet.
 * Add: Einstellung hinzugefügt (DeconzNameFromDP) um für Deconz den Namen des Datenpunktes statt übergeordnetem Channel nutzen zu können.
