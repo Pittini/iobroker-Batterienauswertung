@@ -97,6 +97,9 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 11.02.21 (1.7.2)
+* Add: Für Alexa kann nun eine Lautstärke und Instanz vorgegeben werden.
+* Add: Fehlerhaft als String deklarierte Werte, werden nun, wenn möglich, intern zu Zahl gewandelt.
 #### 14.01.21 (1.7.1)
 * Add: Pushover zu Messaging Optionen hinzugefügt (TheBermud)
 #### 08.01.21 (1.7.0)
