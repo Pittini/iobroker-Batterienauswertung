@@ -97,6 +97,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 10.06.21 (1.7.4)
+* Fix: Zustand "NORMAL" bei Tado wird jetzt berücksichtigt und als 100% gewertet. 
 #### 03.05.21 (1.7.3)
 * Fix: Fehlermeldung "Read-only state ... has been written without ack-flag with value ..." nach update des Js Controller auf Version 3.3.x oder höher behoben.
 #### 11.02.21 (1.7.2)

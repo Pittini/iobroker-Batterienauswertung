@@ -1,6 +1,6 @@
-// Batterieüberwachungsskript Version 1.6.6 Stand 01.11.2020 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.7.4"; // Batterieüberwachungsskript Stand 10.06.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
-
+log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
 //Vorraussetzungen: Den Gerätechannels müssen Räume, sowie die Funktion "BatterieSpannung_xx" für jeden entsprechenden Batteriespannungs Datenpunkt zugewiesen sein.
 //Bitte unbedingt Anleitung beachten
@@ -10,16 +10,28 @@
 const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DPs
 const logging = false; //Logging aktivieren?
 const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
+const DeadFunktionName = "DeadCheck"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
 const UseMail = false; // Sollen Nachrichten via Mail gesendet werden?
-const UseAlexa = false; // Sollen Nachrichten via Alexa ausgegeben werden?
-const AlexaId = ""; // Die Alexa Seriennummer
 const UseSay = false; // Sollen Nachrichten via Say ausgegeben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const UseEventLog = false; // Sollen Nachrichten ins Eventlog geschreiben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const UsePopUp = false // Soll PopUp angezeigt werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const ProzMeansLive = true; //Zeigen Prozentwerte des Gerätedatenpunktes Batteriekapazität oder restliche Lebensdauer?
 let DeadIsAfter = 360; // In Minuten - Zeit nach der ein Gerät als "tot" gewertet wird wenn keine Statusänderung (ts) erfolgte.
 const NotifyDeadDevices = true; //Sollen auch "tote" Geräte gemeldet werden?
+const DeconzNameFromDP = false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
+
+//Variablen für Alexa
+const UseAlexa = false; // Sollen Nachrichten via Alexa ausgegeben werden?
+const AlexaInstance = "alexa2.0";
+const AlexaId = ""; // Die Alexa Seriennummer
+const AlexaVolume = "50"; // Lautstärke der Nachrichten. Wert von 1 bis 100
+
+//Variablen für Pushover
+const UsePushover = false; //Sollen Nachrichten via Pushover versendet werden?
+const PushoverDevice = 'All'; //Welches Gerät soll die Nachricht bekommen
+const PushoverInstance = "pushover.0"; //Pushoverinstanz welche genutzt werden soll angeben
+const PushOverTitle = 'Batterien überprüfen';
 
 //Tabellen Einstellungen
 const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
@@ -41,9 +53,9 @@ const TblShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Ber�
 const TblShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
 
 //Ab hier nix mehr ändern
-
-let DpCount = 0; //Zähler für anzulegende Datenpunkte
+/** @type {{ id: string, initial: any, forceCreation: boolean, common: iobJS.StateCommon }[]} */
 const States = []; //States Array initialisieren
+let DpCount = 0; //Zähler für anzulegende Datenpunkte
 const Sensor = [] //Sensoren Array initialisieren
 const SensorVal = []; //SensorDatenpunkte Werte Array initialisieren
 const SensorUmax = []; //Sensoren Array Batteriespannungswerte Werte initialisieren
@@ -126,11 +138,15 @@ function Init() {
                 let TempLiveWindow = Umax - BattMinLimitTemp;
                 for (let y in members) { // Loop über alle WelcheFunktionVerwenden Members
                     Sensor[counter] = members[y]; //Treffer in SenorIDarray einlesen
-                    if (!existsState(Sensor[counter]) || typeof (getState(Sensor[counter]).val) == undefined || typeof (getState(Sensor[counter]).val) == null || getState(Sensor[counter]).val == "") {
-                        TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden 
-                    } else {
-                        TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
+                    TempVal = getState(Sensor[counter]).val;//Wert vom Sensor in Tempval einlesen um wiederholte Getstates zu vermeiden
+                    if (typeof (TempVal) == "undefined") TempVal = 0; //Bei leeren Feldern 0 setzen um Fehler zu vermeiden
+                    if (typeof (TempVal) == "string") { //Wenn Wert als String deklariert obwohl Zahl
+                        if (typeof (parseFloat(TempVal)) == "number") {
+                            TempVal = parseFloat(TempVal);
+                        };
                     };
+                    if (logging) log("existsState(Sensor[counter])=" + existsState(Sensor[counter]) + " typeof (getState(Sensor[counter]).val)=" + typeof (getState(Sensor[counter]).val) + " getState(Sensor[counter]).val=" + getState(Sensor[counter]).val)
+                    SensorState[counter] = "";
                     TempUnit = GetUnit(counter);
                     if (logging) log("Tempval=" + TempVal + " TempUnit=" + TempUnit + " TypeOf=" + typeof (TempVal))
                     switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
@@ -171,12 +187,12 @@ function Init() {
                             };
                             break;
                         case "string": //Sensorval ist Text
-                            if (TempVal == "ok") {
+                            if (TempVal == "ok" || TempVal == "NORMAL") {
                                 SensorVal[counter] = Umax; //Batt wird als voll definiert und auf Umax gesetzt
                                 SensorUProz[counter] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
                                 SensorLiveProz[counter] = 100; //Lebensprozent auf 100%
                             }
-                            else if (TempVal != "ok") { //Bei BatteryState != ok
+                            else { //Bei BatteryState != ok
                                 SensorVal[counter] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
                                 SensorUProz[counter] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
                                 SensorLiveProz[counter] = 0; //Lebensprozent auf 0%
@@ -238,36 +254,104 @@ function Meldung(msg) {
         });
     };
     if (UseAlexa) {
-        if (AlexaId != "") setState("alexa2.0.Echo-Devices." + AlexaId + ".Commands.announcement"/*announcement*/, msg);
+        if (AlexaId != "") setState(AlexaInstance + ".Echo-Devices." + AlexaId + ".Commands.announcement"/*announcement*/, AlexaVolume + "; " + msg);
     };
+    if (UsePushover) {
+        sendTo(PushoverInstance, {
+            device: PushoverDevice,
+            message: msg,
+            title: PushOverTitle,
+            priority: 0,
+            retry: 60,
+            expire: 600,
+            html: 1
+        });
+    };
+
     if (logging) log(msg);
     if (UseEventLog) WriteEventLog(msg);
     if (UsePopUp) ShowPopUp(true, msg, "Batterys", "red");
-    setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage schreiben
+    setState(praefix + "LastMessage", LastMessage, true); //Meldung in Datenpunkt LastMessage schreiben
 }
+
 
 function CheckDeadBatt() {
     if (logging) log("Reaching CheckDeadBatt()");
     let jetzt = new Date().getTime();
+    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
     DeadDeviceCount = 0;
+    let members
+    for (let y in Funktionen) {        // loop ueber alle Funktionen
+        let Funktion = Funktionen[y].name; // Einzelne Funktion aus dem Array
+        if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnung verwendet
+        if (Funktion.includes(DeadFunktionName)) {
+            members = Funktionen[y].members; //Array mit allen Mitgliedern der Funktion erzeugen
+        };
+    };
+
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (existsState(Sensor[x])) {
-            if ((getState(Sensor[x]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) { //Wenn letzte Aktualisierung + Karrenzzeit kleiner aktuelle Zeit
-                if (SensorState[x] != "dead") { //Wenn Sensor bei letzter Prüfung noch nicht tot.
+            let ParentDeviceId = GetParentId(Sensor[x]);
+            let SecondCheckFound = false;
+            let IsDead = false;
+
+            //First check at Battery Datapoint
+            if ((getState(Sensor[x]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) { //Wenn letzte Aktualisierung + Karrenzzeit kleiner aktuelle Zeit = Sensor möglicher weise tot, 2te Prüfung einleiten
+                IsDead = true;
+                if (logging) log("Device " + ParentDeviceId + " is possibly dead, searching for second check");
+            };
+
+            //Second check at Extra Function Datapoint DeadCheck
+            if (IsDead) {
+                for (let z in members) {
+                    if (!SecondCheckFound) {
+                        if (members[z].includes(ParentDeviceId)) {    //Jetzt prüfen ob weitere Funktion DeadCheck innerhalb des Channels
+                            SecondCheckFound = true;
+                            if (logging) log("Device " + ParentDeviceId + " has second check, now checking");
+                            if (logging) log("z=" + z + " Device " + ParentDeviceId + " second check at  " + members[z]);
+                            if ((getState(members[z]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) {
+                                if (logging) log("Second check failed, " + ParentDeviceId + " seems to be really dead");
+                                //  IsDead = true;
+                            } else {
+                                if (logging) log(ParentDeviceId + " is not dead at second checkpoint");
+                                IsDead = false;
+                            };
+                        }
+
+                    };
+                };
+                if (logging && !SecondCheckFound && IsDead) log("No second checkpoint found for " + ParentDeviceId + " so its really dead");
+            };
+
+            //Reaction after checks
+            if (IsDead) {
+                if (logging) log("Jim...he's dead")
+                if (SensorState[x] != "dead") { //Wenn Sensor bei vorheriger Prüfung noch nicht tot, Meldung absetzen.
                     if (NotifyDeadDevices) {
-                        Meldung("Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name);
+                        Meldung("Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(ParentDeviceId).common.name);
                     };
                 };
                 SensorState[x] = "dead"; //Status auf tot setzen
                 DeadDeviceCount++; //Zähler ehöhen
-            }
-            else if (SensorState[x] == "dead") { //Wenn Sensor als tot gelistet, aber wieder aktualisiert, Status prüfen
-                CheckBatterys(x);
+            } else {
+                if (SensorState[x] == "dead") { //Wenn Sensor bisher als tot gelistet, aber wieder aktualisiert, Status prüfen
+                    SensorState[x] = "ok"
+                    CheckBatterys(x);
+
+                };
             };
+        } else {
+            log("CheckDeadBatt() State for " + x + " doesnt exists");
+        };
+        //  log("x=" + x + "Sensor " + Sensor[x] + " IsDead=" + IsDead + " Sensorstate=" + SensorState[x]);
+
+        if (x == Sensor.length - 1) { //Ausführung erst wenn Schleife komplett durch ist (async)
+            setState(praefix + "DeadDeviceCount", DeadDeviceCount, true);
+
+            MakeTable();
         };
     };
-    setState(praefix + "DeadDeviceCount", DeadDeviceCount);
-    MakeTable();
+
 }
 
 function Ticker() {
@@ -285,7 +369,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
         if (SensorState[x] != "warn" && SensorState[x] != "dead") SensorState[x] = "ok";
         if (SensorVal[x] > BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
-            if (SensorLiveProz[x] < LowestBattProz) { //Wenn Sensorwert kleiner LowestBattProz, LowestBattVal auf neuen Wert setzen um das Gerät mit den wenigsten Prozent zu ermitteln
+            if (SensorLiveProz[x] <= LowestBattProz) { //Wenn Sensorwert kleiner LowestBattProz, LowestBattVal auf neuen Wert setzen um das Gerät mit den wenigsten Prozent zu ermitteln
                 LowestBattProz = SensorLiveProz[x];
                 LowestBattIndex = x;
             };
@@ -293,7 +377,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
     };
 
     NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + SensorVal[LowestBattIndex].toFixed(2) + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(GetParentId(Sensor[LowestBattIndex]), "common").common.name;
-    setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt);
+    setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt, true);
     SensorState[LowestBattIndex] = "info";
     if (logging) log(NextExpectedLowBatt);
 }
@@ -303,7 +387,7 @@ function CheckAllBatterysOk() {
     AllBatterysOk = true;
     EmptyBatCount = 0;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
-        if (SensorVal[x] < BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit unterschritten haben
+        if (SensorVal[x] <= BatteryMinLimit[x]) { // Nur Sensoren berücksichtigen die das min Limit unterschritten haben
             //log(Sensor[x]);
             AllBatterysOk = false;
             EmptyBatCount++; //Alle Sensoren zählen welche das Batt min Limit unterschritten haben
@@ -312,18 +396,18 @@ function CheckAllBatterysOk() {
 
     if (DeadDeviceCount > 0) AllBatterysOk = false;
 
-    setState(praefix + "EmptyBatCount", EmptyBatCount);
-    setState(praefix + "AllBatterysOk", AllBatterysOk);
+    setState(praefix + "EmptyBatCount", EmptyBatCount, true);
+    setState(praefix + "AllBatterysOk", AllBatterysOk, true);
     if (EmptyBatCount == 0 && DeadDeviceCount == 0) {
         LastMessage = ""; //Lastmessage löschen
-        setState(praefix + "LastMessage", LastMessage); //Meldung in Datenpunkt LastMessage löschen
+        setState(praefix + "LastMessage", LastMessage, true); //Meldung in Datenpunkt LastMessage löschen
         if (logging) log("Alle Batterien ok, Lastmessage gelöscht");
     };
 }
 
 function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn getriggert
     if (logging) log("Reaching CheckBatterys(" + x + ") Val=" + SensorVal[x] + " Limit=" + BatteryMinLimit[x]);
-    if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
+    if (SensorVal[x] <= BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
         //LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
         LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name;
 
@@ -346,7 +430,7 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
             if (logging) log("Sensor[" + x + "] = ist ausgefallen oder disconnected");
             LastMessage += "Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
         }
-        else if (SensorVal[x] < BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
+        else if (SensorVal[x] <= BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
             if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLimit von " + BatteryMinLimit[x] + " V");
             LastMessage += "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
 
@@ -375,24 +459,9 @@ function GetUnit(x) {
     return unit;
 }
 
-/*
 function GetParentId(Id) {
     let parentDevicelId;
-
-    if (Id.indexOf("hm-rpc.") == -1 && Id.indexOf("shelly.") == -1) { //Wenn kein HM und kein shelly Adapter, eine Ebene zurück
-        parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
-    }
-    else { //Wenn HM dann zwei Ebenen zurück
-        parentDevicelId = Id.split(".").slice(0, -2).join(".");// Id an den Punkten in Array schreiben (split), die 2 letzten Elemente von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
-    };
-    //if (logging) log("Id= " + Id + " ParentDeviceId= " + parentDevicelId)
-    return parentDevicelId
-}
-*/
-
-function GetParentId(Id) {
-    let parentDevicelId;
-    if (Id.indexOf("deconz.") > -1 || Id.indexOf("hm-rpc.") > -1 || Id.indexOf("shelly.") > -1){ //Wenn deconz, hm-rpc oder shelly dann zwei Ebenen zurück
+    if (Id.indexOf("deconz.") > -1 || Id.indexOf("hm-rpc.") > -1 || Id.indexOf("shelly.") > -1) { //Wenn deconz, hm-rpc oder shelly dann zwei Ebenen zurück
         parentDevicelId = Id.split(".").slice(0, -2).join(".");// Id an den Punkten in Array schreiben (split), die 2 letzten Elemente von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     }
     else if (Id.indexOf("hmip.") > -1) { //Wenn HMIP dann drei Ebenen zurück
@@ -401,6 +470,7 @@ function GetParentId(Id) {
     else { //Wenn kein deconz, kein HM und kein shelly Adapter, eine Ebene zurück
         parentDevicelId = Id.split(".").slice(0, -1).join(".");// Id an den Punkten in Array schreiben (split), das letzte Element von hinten entfernen (slice) und den Rest wieder zu String zusammensetzen
     };
+    if (DeconzNameFromDP && Id.indexOf("deconz.") > -1) parentDevicelId = Id;
     //if (logging) log("Id= " + Id + " ParentDeviceId= " + parentDevicelId)
     return parentDevicelId;
 }
@@ -514,7 +584,7 @@ function MakeTable() {
     };
 
     MyTable = MyTable + "</table>";
-    setState(praefix + "OverviewTable", MyTable);
+    setState(praefix + "OverviewTable", MyTable, true);
     //if (logging) log(MyTable);
 }
 
@@ -525,7 +595,15 @@ function CreateTrigger() {
         on(Sensor[x], function (dp) { //Trigger in Schleife erstellen
             let TempVal = dp.state.val;
             let TempUnit = GetUnit(x);
-            let TempLiveWindow = SensorUmax[x] - BatteryMinLimit[x]
+            let TempLiveWindow = SensorUmax[x] - BatteryMinLimit[x];
+            if (typeof (TempVal == "string")) { //Falls MinLimit Wert String ist zu float wandeln
+                //log("Value is String, trying to convert");
+                if (typeof parseFloat(TempVal) == "number") {
+                    if (logging) log("Value conversion from String to number - success");
+                    TempVal = parseFloat(TempVal);
+                };
+            };
+
             switch (typeof (TempVal)) { //Wenn der Sensorwert bool ist (wenn nur LowBatt mit true/false vom Sensor gemeldet wird)
                 case "boolean": //Sensorval ist Bool
                     if (TempVal) { //Bei Lowbat=true
@@ -566,12 +644,12 @@ function CreateTrigger() {
                     };
                     break;
                 case "string": //Sensorval ist Text
-                    if (TempVal == "ok") {
+                    if (TempVal == "ok" || TempVal == "NORMAL") {
                         SensorVal[x] = SensorUmax[x]; //Batt wird als voll definiert und auf Umax gesetzt
                         SensorUProz[x] = 100; //Prozentwerte aus Umax und Sensorwert errechnen
                         SensorLiveProz[x] = 100; //Lebensprozent auf 100%
                     }
-                    else if (TempVal != "ok") { //Bei BatteryState != ok
+                    else { //Bei BatteryState != ok
                         SensorVal[x] = 0; //Batt wird als leer definiert und 0.1 unter MinLimit gesetzt
                         SensorUProz[x] = 0; //Prozentwerte aus Umax und Sensorwert errechnen
                         SensorLiveProz[x] = 0; //Lebensprozent auf 0%
@@ -594,4 +672,3 @@ function CreateTrigger() {
         });
     };
 }
-
