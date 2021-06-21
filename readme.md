@@ -17,7 +17,7 @@
 # Installation
 1. Unter Aufzählungen > Funktionen, eine oder mehrere Funktion/en hinzufügen - wieviele ist abhängig davon wieviele verschiedene Batteriespannungen ihr überwachen wollt. 
 Hier gilt es eine Besonderheit zu beachten: Da in Iobroker nirgends die Information bereitsteht welche Batterien in den Geräten sind, bzw. welche Spannungen vorliegen, müßt Ihr dies dem Skript mitteilen indem hinter dem eigentlichen Funktionsnamen z.B. "BatterieSpannung_" noch die Spannung anzugeben ist - ohne Dezimalpunkt. Z.B. "BatterieSpannung_15" für 1,5V Geräte, "BatterieSpannung_30" für 3V Geräte, "BatterieSpannung_120" für 12V Geräte usw. Wollt Ihr also zwei verschiedene Spannungen überwachen, ergibt das zwei Funktionen. Dies gilt auch für Geräte welche nur Lowbat oder % ausgeben, auch diese haben ja irgendeine, klar definierte, Batteriespannung.  
-2. Zusätzlich legt ihr die Funktion "DeadCheck" an, hiermit könnt Ihr EINEN anderen Datenpunkt innerhalb der gleichen Channelroot zur Ausfallüberwachung hinzufügen. Sinnvoll für Devices welchen den Batteriedatenpunkt sehr selten aktualisieren (HM z.B.).
+2. Zusätzlich legt ihr die Funktion "DeadCheck" an, hiermit könnt Ihr EINEN anderen Datenpunkt innerhalb der gleichen Channelroot zur Ausfallüberwachung hinzufügen. 
    
 ![batterienauswertungtut2.jpg](/admin/batterienauswertungtut2.jpg) 
 Sollte der Punkt "Aufzählungen" bei Euch nicht vorhanden sein, dann hier aktivieren:  
@@ -51,7 +51,9 @@ Diese Datenpunkte haben folgenden Sinn/Bedeutung:
     5. **LastMessage** - Die letzte, aktuelle und aktive Warnmeldung, hier steht falls eine Batterie das eingestellte MinLimit unterschreitet und gewechselt werden sollte. Das Feld wird geleert wenn es keine zu wechselnde Batterie gibt.
     6. **NextExpectedLowBatt** - Zeigt an welche Batterie vorrausichtlich als nächste leer wird, sich aber noch innerhalb des Limits befindet, damit Ihr schon mal die richtige neue Batterie besorgen könnt.  
     7. **OverviewTable** - Eine einfache, dynamisch erstellte HTML Tabelle, mit Übersicht aller Geräte, Raumzuordnungen, Sollspannungen, Istspannungen und errechnete Prozentwerte um die Daten vergleichbar zu machen trotz unterschiedlicher Grundspannungen. Wird im Vis Widget Satz verwendet.
- 12.  Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
+    8. **DeviceCount** - Zeigt Anzahl der überwachten Geräte.
+    9. **DeadCheckCount** - Zeigt Anzahl der Geräte welche einen DeadCheck haben.
+ 1.   Damit ist die Installation des Skriptes abgeschlossen und Ihr könnt bei Bedarf den [Demowidgetsatz](/viswidgets.txt) in Euer Vis Projekt, via "Widgets importieren" einfügen.
     
 
 # Demo Widget Satz für Vis
@@ -89,6 +91,7 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
     * Die "%bat" Spalte errechnet sich unter Verwendung von Umax/UNenn und zeigt (mit den oben erwähnten einschränkungen bei lowbat Geräten) die restliche Batteriekapazität in %.
     * Die "%live" Spalte zeigt die prozentuale restliche Lebensdauer des Gerätes an. Dies ist auch der %Wert welcher beim mi-home Adapter ausgegeben wird. Beispiel: Im Gerät ist eine 3V Batterie verbaut. Das Gerät fällt aus bei 2V, verbleibt ein "Spannungsfenster" von 1V. Hat die Batterie nun den aktuellen Stand von 2.5V, so würde dies ein %live von 50% ergeben, während die Batteriekapazität bei 75% stehen würde. Die ist quasi der Wert wie Ihr ihn z.B vom Handy kennt. das Gerät fällt bei 0% aus, da hat die Batterie aber durchaus noch zig% der Nennspannung.
     * Spalte "Status" zeigt den vom Skript ermittelten Status der Batterie, welcher auch für die Anzeige der Farbbalken verwendet wird in Textform.
+    * Spalte "DC" zeigt an ob für dieses Gerät ein DeadCheck eingerichtet wurde.
 
 * Die in der Tabelle verwendeten Farben könnt Ihr im Skript, Zeile 21-26 ändern. Es sind sowohl benannte Farben z.B. "red" als auch Hexwerte mit vorangestelltem # , z.B. "#ff0000" erlaubt. Eine Übersicht benannter Farben und Hex-Werte findet Ihr z.B. [hier](https://wiki.selfhtml.org/wiki/Grafik/Farbpaletten).
 
