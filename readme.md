@@ -97,6 +97,10 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 21.06.21 (1.7.5)
+* Fix: Eingabe des BatMinLimit als String wird nun autom. konvertiert.
+* Fix: LastMessage wird nun erst gelöscht wenn sowohl alle Batts Ok UND auch keine als Dead gemeldet.
+* Fix: NaN Meldungen bei Stringwerten behoben. 
 #### 10.06.21 (1.7.4)
 * Fix: Zustand "NORMAL" bei Tado wird jetzt berücksichtigt und als 100% gewertet. 
 #### 03.05.21 (1.7.3)
