@@ -50,7 +50,7 @@ const TblShowUlimitCol = true; //Tabellenspalte mit unterer Batterielimit Spannu
 const TblShowProzbatCol = true; //Tabellenspalte mit Batteriestand in Prozent anzeigen?
 const TblShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Berücksichtigung der Limitspannung in Prozent anzeigen? Beispiel: Batterie hat 3V Nennspannung, Limit ist bei 2V, aktueller Batteriestand ist 2.5V, dann wäre die Restlebensdauer 50%
 const TblShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
-
+const TblShowHasDeadCheck = true; //Tabellenspalte mit DeadCheckstatus ausgeben?
 //Ab hier nix mehr ändern
 /** @type {{ id: string, initial: any, forceCreation: boolean, common: iobJS.StateCommon }[]} */
 const States = []; //States Array initialisieren
@@ -64,6 +64,7 @@ const SensorState = []; //Statusarray, mögliche Werte ok,info,warn,dead
 const BatteryMinLimit = []; // Das eingestellte Batterie min. limit
 const BatteryMinLimitDp = []; //Array mit den generierten MinLimit Einstellungsdatenpunkten
 const WelcheFunktionVerwenden = []; // Array mit allen Einträgen aus Funktionen welche den FunktionBaseName beinhalten
+const HasDeadCheck = [];
 let AllBatterysOk = true;
 let LastMessage = "";
 let LastMessageSeparator = "<br>";
@@ -94,6 +95,10 @@ DpCount++;
 States[DpCount] = { id: praefix + "EmptyBatCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der zu wechselnden Batterien", type: "number", role: "state", def: 0 } }; //
 DpCount++;
 States[DpCount] = { id: praefix + "DeadDeviceCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der nicht mehr aktualisierenden Geräte", type: "number", role: "state", def: 0 } }; //
+DpCount++;
+States[DpCount] = { id: praefix + "DeviceCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der überwachten Geräte", type: "number", role: "state", def: 0 } }; //
+DpCount++;
+States[DpCount] = { id: praefix + "DeadCheckCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der gesetzten DeadChecks", type: "number", role: "state", def: 0 } }; //
 
 //Alle States anlegen, Main aufrufen wenn fertig
 let numStates = States.length;
@@ -204,8 +209,9 @@ function Init() {
                     SensorUmax[counter] = Umax; //Synchrones UmaxArray füllen
                     BatteryMinLimit[counter] = BattMinLimitTemp; //Limitarray füllen
                     if (logging) log(counter + " " + Funktion + ' found at ' + members[y] + " Umax= " + SensorUmax[counter] + " BattMinLimit=" + BattMinLimitTemp + " Val= " + SensorVal[counter] + " SensorProzent= " + SensorUProz[counter]);
-                    counter++
+                    counter++;
                 };
+                setState(praefix + "DeviceCount", counter, true);
             };
         };
     };
@@ -280,7 +286,8 @@ function CheckDeadBatt() {
     let jetzt = new Date().getTime();
     let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
     DeadDeviceCount = 0;
-    let members
+    let members;
+    let counter = 0
     for (let y in Funktionen) {        // loop ueber alle Funktionen
         let Funktion = Funktionen[y].name; // Einzelne Funktion aus dem Array
         if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnung verwendet
@@ -293,10 +300,12 @@ function CheckDeadBatt() {
         if (existsState(Sensor[x])) {
             let ParentDeviceId = GetParentId(Sensor[x]);
             let IsDead = false;
+            HasDeadCheck[x] = false;
 
             //Check at Extra Function Datapoint DeadCheck
             for (let z in members) {
                 if (members[z].includes(ParentDeviceId)) {    //Jetzt prüfen ob Funktion DeadCheck innerhalb des Channels
+                    HasDeadCheck[x] = true;
                     if (logging) log("Device " + ParentDeviceId + " has Deadcheck, now checking");
                     if (logging) log("z=" + z + " Device " + ParentDeviceId + " check at  " + members[z]);
                     if ((getState(members[z]).ts + (DeadIsAfter * 60 * 1000)) < jetzt) {
@@ -306,8 +315,11 @@ function CheckDeadBatt() {
                         if (logging) log(ParentDeviceId + " is not dead");
                         IsDead = false;
                     };
+                    counter++;
+
                 };
             };
+            setState(praefix + "DeadCheckCount", counter, true);
 
             //Reaction after checks
             if (IsDead) {
@@ -397,7 +409,7 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
     if (logging) log("Reaching CheckBatterys(" + x + ") Val=" + SensorVal[x] + " Limit=" + BatteryMinLimit[x]);
     if (SensorVal[x] <= BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
         //LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(Sensor[x].substring(0, Sensor[x].lastIndexOf("."))).common.name;
-        LastMessage = "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name;
+        LastMessage = "Batteriestand (" + parseInt(SensorVal[x] * 100) / 100 + " V) unter Limit (" + BatteryMinLimit[x] + " V) im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name;
 
         Meldung(LastMessage);
         SensorState[x] = "warn";
@@ -421,7 +433,7 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
         }
         else if (SensorVal[x] <= BatteryMinLimit[x]) { //Wenn Min. Wert unterschritten
             if (logging) log("SensorVal[" + x + "] = " + SensorVal[x] + "V, unterschreitet MinLimit von " + BatteryMinLimit[x] + " V");
-            LastMessage += "Batteriestand unter Limit im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
+            LastMessage += "Batteriestand (" + parseInt(SensorVal[x] * 100) / 100 + " V) unter Limit (" + BatteryMinLimit[x] + " V) im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x])).common.name + LastMessageSeparator;
 
             SensorState[x] = "warn";
         }
@@ -505,7 +517,9 @@ function MakeTable() {
     if (TblShowStatusCol) {
         MyTableHead = MyTableHead + "<th " + headstyle1 + HeadBgColor + "'>Status</th>";
     };
-
+    if (TblShowHasDeadCheck) {
+        MyTableHead = MyTableHead + "<th " + headstyle1 + HeadBgColor + "'>DC</th>";
+    };
     MyTableHead = MyTableHead + "</tr>";
     MyTable = MyTableHead + "<tr>";
 
@@ -568,7 +582,9 @@ function MakeTable() {
         if (TblShowStatusCol) {
             MyTable = MyTable + "<td " + style1 + BgColor + "'>" + SensorState[x] + "</td>";
         };
-
+        if (TblShowHasDeadCheck) {
+            MyTable = MyTable + "<td " + style1 + BgColor + "'>" + (HasDeadCheck[x] ? 'x' : '-') + "</td>";
+        };
         MyTable = MyTable + "</tr>";
     };
 
