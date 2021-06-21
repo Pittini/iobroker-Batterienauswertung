@@ -97,10 +97,12 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 21.06.21 (1.8.0)
+* Change: Die bisherige automatische DeadCheckfunktion auf dem Batteriespannungdatenpunkt wurde entfernt aufgrund von einigen, insbesonders HM, Geräten welche kaum oder nicht aktualisieren. Wird ein DeadCheck gewünscht, so muß die Funktion "DeadCheck" explizit auf den gwünschten Datenpunkt gelegt werden. Die muß innerhalb des gleichen Channels wie der Batteriedatenpunkt geschehen. https://github.com/Pittini/iobroker-Batterienauswertung/issues/18 
 #### 21.06.21 (1.7.5)
 * Fix: Eingabe des BatMinLimit als String wird nun autom. konvertiert.
 * Fix: LastMessage wird nun erst gelöscht wenn sowohl alle Batts Ok UND auch keine als Dead gemeldet.
-* Fix: NaN Meldungen bei Stringwerten behoben. 
+* Fix: NaN Meldungen bei Stringwerten behoben. https://github.com/Pittini/iobroker-Batterienauswertung/issues/20
 #### 10.06.21 (1.7.4)
 * Fix: Zustand "NORMAL" bei Tado wird jetzt berücksichtigt und als 100% gewertet. 
 #### 03.05.21 (1.7.3)
