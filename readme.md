@@ -100,6 +100,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 26.06.21 (1.8.2)
+* Add: Optionen für Telegram hinzugefügt. https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestands%C3%BCberwachung-vis-ausgabe/434?_=1624739005872
 #### 21.06.21 (1.8.1)
 * Change: Die bisherige automatische DeadCheckfunktion auf dem Batteriespannungdatenpunkt wurde entfernt aufgrund von einigen, insbesonders HM, Geräten welche kaum oder nicht aktualisieren. Wird ein DeadCheck gewünscht, so muß die Funktion "DeadCheck" explizit auf den gwünschten Datenpunkt gelegt werden. Dies muß innerhalb des gleichen Channels wie der Batteriedatenpunkt geschehen. https://github.com/Pittini/iobroker-Batterienauswertung/issues/18 
 * Add: Zähler Datenpunkt für Gesamtzahl der überwachten Geräte und Anzahl der Geräte mit DeadCheck hinzugefügt.

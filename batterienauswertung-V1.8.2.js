@@ -1,4 +1,4 @@
-const Version = "1.8.1"; // Batterieüberwachungsskript Stand 23.06.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.2"; // Batterieüberwachungsskript Stand 26.06.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -11,7 +11,6 @@ const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DP
 const logging = false; //Logging aktivieren?
 const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const DeadFunktionName = "DeadCheck"; //Name der Funktion welche für den DeadCheck genutzt wird
-const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
 const UseMail = false; // Sollen Nachrichten via Mail gesendet werden?
 const UseSay = false; // Sollen Nachrichten via Say ausgegeben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const UseEventLog = false; // Sollen Nachrichten ins Eventlog geschreiben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
@@ -21,6 +20,7 @@ let DeadIsAfter = 360; // In Minuten - Zeit nach der ein Gerät als "tot" gewert
 const NotifyDeadDevices = true; //Sollen "tote" Geräte gemeldet werden?
 const NotifyWarnDevices = true;//Sollen Geräte unter Limit gemeldet werden?
 const DeconzNameFromDP = false; //Nimmt für Deconz den Namen aus dem Datenpunkt statt aus dem übergeordnetem Channel
+
 //Variablen für Alexa
 const UseAlexa = false; // Sollen Nachrichten via Alexa ausgegeben werden?
 const AlexaInstance = "alexa2.0";
@@ -32,6 +32,11 @@ const UsePushover = false; //Sollen Nachrichten via Pushover versendet werden?
 const PushoverDevice = 'All'; //Welches Gerät soll die Nachricht bekommen
 const PushoverInstance = "pushover.0"; //Pushoverinstanz welche genutzt werden soll angeben
 const PushOverTitle = 'Batterien überprüfen';
+
+//Variablen für Telegram
+const UseTelegram = false; // Sollen Nachrichten via Telegram gesendet werden?
+const TelegramInstance = "telegram.1"; //Telegraminstanz welche genutzt werden soll angeben
+const TelegramUser = ''; //Welche User sollen die Nachricht bekommen? Leer lassen für alle User. Mehrere User getrennt durch Komma.
 
 //Tabellen Einstellungen
 const TblOkBgColor = "#4caf50"; //Hintergrundfarbe für Batteriestatus Ok
@@ -253,7 +258,8 @@ function Meldung(msg) {
     log("Reaching Meldung(), msg=" + msg);
     if (UseSay) Say(msg);
     if (UseTelegram) {
-        sendTo("telegram.0", "send", {
+        sendTo(TelegramInstance, "send", {
+            user: TelegramUser,
             text: msg
         });
     };
