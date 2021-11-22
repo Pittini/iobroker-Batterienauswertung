@@ -1,4 +1,4 @@
-const Version = "1.8.2"; // Batterieüberwachungsskript Stand 26.06.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.3"; // Batterieüberwachungsskript Stand 22.11.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -11,6 +11,7 @@ const praefix = "javascript.0.BatterieUeberwachung."; //Grundpfad für Script DP
 const logging = false; //Logging aktivieren?
 const FunktionBaseName = "BatterieSpannung_"; //Name der Funktion welche für die Batterieüberwachung genutzt wird
 const DeadFunktionName = "DeadCheck"; //Name der Funktion welche für den DeadCheck genutzt wird
+const WhichEnumCategoryToUse = "functions"; // Legt fest in welcher Kategorie sich die Aufzählungen befinden! Nur ändern wer weis was er tut!
 const UseMail = false; // Sollen Nachrichten via Mail gesendet werden?
 const UseSay = false; // Sollen Nachrichten via Say ausgegeben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
 const UseEventLog = false; // Sollen Nachrichten ins Eventlog geschreiben werden? Funktion des Authors, sollte bei Anwendern auf false gesetzt werden.
@@ -122,8 +123,7 @@ function Init() {
     let counter = 0; //Zähler für Devices
     let TempVal // Temporärer Sensorwert um nicht mehrere GetStates zu benötigen
     let TempUnit //Einheit für Unterscheidung ob % vorliegen
-    //  let TempLiveWindow //Spannungsfensterbereich
-    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
+    let Funktionen = getEnums(WhichEnumCategoryToUse); //Array mit Aufzählung der Funktionen
     for (let x in Funktionen) {        // loop ueber alle Funktionen
         let Funktion = Funktionen[x].name; // Einzelne Funktion aus dem Array
         if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnug verwendet
@@ -229,8 +229,7 @@ function MainCalc(TempVal, counter) {
 function FillWelcheFunktionVerwenden() {
     if (logging) log("Reaching FillWelcheFunktionVerwenden");
     let z = 0;
-    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
-
+    let Funktionen = getEnums(WhichEnumCategoryToUse); //Array mit Aufzählung der Funktionen
     for (let x in Funktionen) {        // loop ueber alle Funktionen
         let Funktion = Funktionen[x].name; // Einzelne Funktion aus dem Array
         if (typeof Funktion == 'object') Funktion = Funktion.de; //Wenn Rückgabewert ein Objekt ist, ist die Funktion mehrsprachig und es wird die deutsche Bezeichnung verwendet
@@ -291,7 +290,7 @@ function Meldung(msg) {
 function CheckDeadBatt() {
     if (logging) log("Reaching CheckDeadBatt()");
     let jetzt = new Date().getTime();
-    let Funktionen = getEnums('functions'); //Alle Funktionen der Aufzählung in Array Funktionen übertragen
+    let Funktionen = getEnums(WhichEnumCategoryToUse); //Array mit Aufzählung der Funktionen
     DeadDeviceCount = 0;
     let members;
     let counter = 0;
@@ -393,7 +392,7 @@ function CheckAllBatterysOk() {
         };
     };
 
-    if (DeadDeviceCount > 0) AllBatterysOk = false;
+    //  if (DeadDeviceCount > 0) AllBatterysOk = false;
 
     setState(praefix + "EmptyBatCount", EmptyBatCount, true);
     setState(praefix + "AllBatterysOk", AllBatterysOk, true);
@@ -575,7 +574,9 @@ function MakeTable() {
             MyTable += "<td " + style0 + BgColor + "'>" + GetParentId(Sensor[x].id) + "</td>";
         };
         if (TblShowDeviceNameCol) {
-            MyTable += "<td " + style0 + BgColor + "'>" + getObject(GetParentId(Sensor[x].id), "common").common.name + "</td>";
+            let tempName = getObject(GetParentId(Sensor[x].id), "common").common.name;
+            if (typeof tempName == "object") tempName = tempName.de;
+            MyTable += "<td " + style0 + BgColor + "'>" + tempName + "</td>";
         };
         if (TblShowRoomCol) {
             MyTable += "<td " + style0 + BgColor + "'>" + GetRoom(x) + "</td>";

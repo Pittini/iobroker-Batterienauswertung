@@ -100,6 +100,9 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 22.11.21 (1.8.3)
+* Add: Verwendete Auflistung jetzt konfigurierbar.
+* Fix: Bei Mehrsprachigen Objektnamen wird jetzt der de Name verrwendet, statt der fehlerhaften [Object][Object] Anzeige.
 #### 26.06.21 (1.8.2)
 * Add: Optionen für Telegram hinzugefügt. https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestands%C3%BCberwachung-vis-ausgabe/434?_=1624739005872
 #### 21.06.21 (1.8.1)
