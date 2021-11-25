@@ -1,4 +1,4 @@
-const Version = "1.8.3"; // Batterieüberwachungsskript Stand 22.11.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.4"; // Batterieüberwachungsskript Stand 25.11.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -375,7 +375,7 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
         };
     };
 
-    NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + Sensor[LowestBattIndex].value.toFixed(2) + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + getObject(GetParentId(Sensor[LowestBattIndex].id), "common").common.name;
+    NextExpectedLowBatt = "Aktuell niedrigster Batteriestand (" + Sensor[LowestBattIndex].value.toFixed(2) + "V): " + GetRoom(LowestBattIndex) + " bei Gerät " + GetName(LowestBattIndex);
     setState(praefix + "NextExpectedLowBatt", NextExpectedLowBatt, true);
     Sensor[LowestBattIndex].state = "info";
     if (logging) log(NextExpectedLowBatt);
@@ -415,9 +415,9 @@ function CheckForAlerts() {
 
         if (Sensor[x].isDead && NotifyDeadDevices) { //Wenn msg vorhanden und Dead Warnungen aktiv
             if (TempMsg == "") {
-                TempMsg = "Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x].id)).common.name;
+                TempMsg = "Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + GetName(x);
             } else {
-                TempMsg += LastMessageSeparator + "Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x].id)).common.name;
+                TempMsg += LastMessageSeparator + "Ausfall oder disconnect im " + GetRoom(x) + " bei Gerät " + GetName(x);
             };
         };
     };
@@ -436,7 +436,7 @@ function CheckForAlerts() {
 function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn getriggert
     if (logging) log("Reaching CheckBatterys(" + x + ") Val=" + Sensor[x].value + " Limit=" + Sensor[x].batteryMinLimit);
     if (Sensor[x].value <= Sensor[x].batteryMinLimit) { //Wenn Min. Wert unterschritten
-        Sensor[x].message = "Batteriestand (" + parseInt(Sensor[x].value * 100) / 100 + " V) unter Limit (" + Sensor[x].batteryMinLimit + " V) im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x].id)).common.name;
+        Sensor[x].message = "Batteriestand (" + parseInt(Sensor[x].value * 100) / 100 + " V) unter Limit (" + Sensor[x].batteryMinLimit + " V) im " + GetRoom(x) + " bei Gerät " + GetName(x);
         Sensor[x].state = "warn";
     }
     else {
@@ -459,7 +459,7 @@ function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
         }
         else if (Sensor[x].value <= Sensor[x].batteryMinLimit) { //Wenn Min. Wert unterschritten
             if (logging) log("SensorVal[" + x + "] = " + Sensor[x].value + "V, unterschreitet MinLimit von " + Sensor[x].batteryMinLimit + " V");
-            Sensor[x].message = "Batteriestand (" + parseInt(Sensor[x].value * 100) / 100 + " V) unter Limit (" + Sensor[x].batteryMinLimit + " V) im " + GetRoom(x) + " bei Gerät " + getObject(GetParentId(Sensor[x].id)).common.name;
+            Sensor[x].message = "Batteriestand (" + parseInt(Sensor[x].value * 100) / 100 + " V) unter Limit (" + Sensor[x].batteryMinLimit + " V) im " + GetRoom(x) + " bei Gerät " + GetName(x);
             Sensor[x].state = "warn";
         }
         else {
@@ -484,6 +484,12 @@ function GetRoom(x) {  // Raum eines Gerätes ermitteln
 function GetUnit(x) {
     let unit = getObject(Sensor[x].id, 'common').common.unit
     return unit;
+}
+
+function GetName(x) {
+    let tempName = getObject(GetParentId(Sensor[x].id), "common").common.name;
+    if (typeof tempName == "object") tempName = tempName.de;
+    return tempName;
 }
 
 function GetParentId(Id) {
@@ -574,9 +580,7 @@ function MakeTable() {
             MyTable += "<td " + style0 + BgColor + "'>" + GetParentId(Sensor[x].id) + "</td>";
         };
         if (TblShowDeviceNameCol) {
-            let tempName = getObject(GetParentId(Sensor[x].id), "common").common.name;
-            if (typeof tempName == "object") tempName = tempName.de;
-            MyTable += "<td " + style0 + BgColor + "'>" + tempName + "</td>";
+            MyTable += "<td " + style0 + BgColor + "'>" + GetName(x) + "</td>";
         };
         if (TblShowRoomCol) {
             MyTable += "<td " + style0 + BgColor + "'>" + GetRoom(x) + "</td>";
