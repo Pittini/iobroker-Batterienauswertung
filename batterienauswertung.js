@@ -1,4 +1,4 @@
-const Version = "1.8.4"; // Batterieüberwachungsskript Stand 25.11.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.5"; // Batterieüberwachungsskript Stand 06.12.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -59,6 +59,19 @@ const TblShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Ber�
 const TblShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
 const TblShowHasDeadCheck = true; //Tabellenspalte mit DeadCheckstatus ausgeben?
 
+//Spalten der JSON Tabellen bei Bedarf ausschalten
+const TblJSNShowLfdCol = true; //Tabellenspalte mit laufender Nummer anzeigen?
+const TblJSNShowDeviceIDCol = true; //Tabellenspalte mit Geräte ID anzeigen?
+const TblJSNShowDeviceNameCol = true; //Tabellenspalte mit Gerätenamen anzeigen?
+const TblJSNShowRoomCol = true; //Tabellenspalte mit Raum anzeigen?
+const TblJSNShowUmaxCol = true; //Tabellenspalte mit Batterie Nennspannung anzeigen? 
+const TblJSNShowUistCol = true; //Tabellenspalte mit aktueller Batteriespannung anzeigen?
+const TblJSNShowUlimitCol = true; //Tabellenspalte mit unterer Batterielimit Spannung anzeigen?
+const TblJSNShowProzbatCol = true; //Tabellenspalte mit Batteriestand in Prozent anzeigen?
+const TblJSNShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Berücksichtigung der Limitspannung in Prozent anzeigen? Beispiel: Batterie hat 3V Nennspannung, Limit ist bei 2V, aktueller Batteriestand ist 2.5V, dann wäre die Restlebensdauer 50%
+const TblJSNShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
+const TblJSNShowHasDeadCheck = true; //Tabellenspalte mit DeadCheckstatus ausgeben?
+
 //Ab hier nix mehr ändern
 /** @type {{ id: string, initial: any, forceCreation: boolean, common: iobJS.StateCommon }[]} */
 const States = []; //States Array initialisieren
@@ -92,6 +105,8 @@ for (let x = 0; x < WelcheFunktionVerwenden.length; x++) {
 States[DpCount] = { id: praefix + "NextExpectedLowBatt", initial: "", forceCreation: false, common: { read: true, write: false, name: "Vorraussichtlich nächste zu wechselnde Batterie", type: "string", role: "state", def: "" } }; //
 DpCount++;
 States[DpCount] = { id: praefix + "OverviewTable", initial: "", forceCreation: false, common: { read: true, write: false, name: "Einfache HTML Übersichtstabelle", type: "string", role: "state", def: "" } }; //
+DpCount++;
+States[DpCount] = { id: praefix + "JSONTable", initial: "", forceCreation: false, common: { read: true, write: false, name: "Einfache JSON Übersichtstabelle", type: "string", role: "state", def: "" } }; //
 DpCount++;
 States[DpCount] = { id: praefix + "EmptyBatCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der zu wechselnden Batterien", type: "number", role: "state", def: 0 } }; //
 DpCount++;
@@ -249,6 +264,7 @@ function main() {
     CheckAllBatterysOk();
     CheckNextLowBatt(); // Batterie mit niedrigster Spannung finden
     MakeTable(); //HTML Tabelle erzeugen
+    MakeJSONTable(); //JSON Tabelle erzeugen
     if (IsInit) Ticker(); //Startet Intervallprüfung für nicht aktualisierende Geräte
     IsInit = false;
 }
@@ -348,6 +364,7 @@ function CheckDeadBatt() {
         if (x == Sensor.length - 1) { //Ausführung erst wenn Schleife komplett durch ist (async)
             setState(praefix + "DeadDeviceCount", DeadDeviceCount, true);
             MakeTable();
+	    MakeJSONTable();
         };
     };
 }
@@ -448,6 +465,7 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
     CheckDeadBatt();
     CheckForAlerts();
     MakeTable();
+    MakeJSONTable();
 }
 
 function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
@@ -621,6 +639,73 @@ function MakeTable() {
 
     MyTable += "</table>";
     setState(praefix + "OverviewTable", MyTable, true);
+}
+
+function MakeJSONTable() {
+    if (logging) log("Reaching MakeJSONTable");
+  
+    let MyJSONTable;
+
+    MyJSONTable = "[";
+
+    for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen 
+
+        MyJSONTable += "{";
+        if (TblJSNShowLfdCol) {
+            MyJSONTable += "\"lfd\":" + "\"" + (x + 1) + "\",";
+        };
+        if (TblJSNShowDeviceIDCol) {
+			MyJSONTable += "\"Sensor ID\":" + "\"" + GetParentId(Sensor[x].id) + "\",";
+        };
+        if (TblJSNShowDeviceNameCol) {
+			MyJSONTable += "\"Sensor Name\":" + "\"" + GetName(x) + "\",";
+        };
+        if (TblJSNShowRoomCol) {
+			MyJSONTable += "\"Raum\":" + "\"" + GetRoom(x) + "\",";
+        };
+        if (TblJSNShowUmaxCol) {
+			MyJSONTable += "\"U Nenn\":" + "\"" + Sensor[x].uMax.toFixed(1) + " V\",";
+        };
+        if (TblJSNShowUistCol) {
+			MyJSONTable += "\"U Ist\":" + "\"" + Sensor[x].value.toFixed(2) + " V\",";
+        };
+        if (TblJSNShowUlimitCol) {
+			MyJSONTable += "\"U Limit\":" + "\"" + Sensor[x].batteryMinLimit.toFixed(2) + " V\",";
+        };
+        if (TblJSNShowProzbatCol) {
+            if (typeof (Sensor[x].uProz) == "number") {
+				MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz.toFixed(1) + " %\",";
+            }
+            else {
+				MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz + "\",";
+            };
+        };
+        if (TblJSNShowProzliveCol) {
+            if (typeof (Sensor[x].liveProz) == "number") {
+				MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz.toFixed(1) + " %\",";
+            }
+            else {
+				MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz + "\",";
+            };
+        };
+        if (TblJSNShowStatusCol) {
+			MyJSONTable += "\"Status\":" + "\"" + Sensor[x].state+ "\",";
+        };
+        if (TblJSNShowHasDeadCheck) {
+			MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "\",";
+        };
+		
+	//Jetzt das letzte Komma wegtrimmen
+	MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);	
+		
+        MyJSONTable = MyJSONTable + "},";
+    };
+	
+	//Nochmal das letzte Komma wegtrimmen
+	MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);
+	
+    MyJSONTable += "]";
+    setState(praefix + "JSONTable", MyJSONTable, true);
 }
 
 //Trigger für Sensoren erzeugen
