@@ -100,6 +100,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 06.12.21 (1.8.5)
+* Add: Es wird nun auch ein Datenpunkt für eine JSON Tabelle erzeugt. Diese kann man sich dann nach belieben formatieren, z. B. beim Einsatz im Jarvis Adapter
 #### 25.11.21 (1.8.4)
 * Fix: Bei Mehrsprachigen Objektnamen wird jetzt der de Name verrwendet, statt der fehlerhaften [Object][Object] Anzeige. Jetzt auch für alle Datenpunkte.
 #### 22.11.21 (1.8.3)
