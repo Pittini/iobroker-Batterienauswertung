@@ -264,7 +264,7 @@ function main() {
     CheckAllBatterysOk();
     CheckNextLowBatt(); // Batterie mit niedrigster Spannung finden
     MakeTable(); //HTML Tabelle erzeugen
-	MakeJSONTable(); //JSON Tabelle erzeugen
+    MakeJSONTable(); //JSON Tabelle erzeugen
     if (IsInit) Ticker(); //Startet Intervallprüfung für nicht aktualisierende Geräte
     IsInit = false;
 }
@@ -364,7 +364,7 @@ function CheckDeadBatt() {
         if (x == Sensor.length - 1) { //Ausführung erst wenn Schleife komplett durch ist (async)
             setState(praefix + "DeadDeviceCount", DeadDeviceCount, true);
             MakeTable();
-			MakeJSONTable();
+	    MakeJSONTable();
         };
     };
 }
@@ -465,7 +465,7 @@ function CheckBatterys(x) { // Prüfung eines einzelnen Batteriestandes wenn get
     CheckDeadBatt();
     CheckForAlerts();
     MakeTable();
-	MakeJSONTable();
+    MakeJSONTable();
 }
 
 function CheckAllBatterys() { // Prüfung aller Batteriestände bei Skriptstart
@@ -646,9 +646,7 @@ function MakeJSONTable() {
   
     let MyJSONTable;
 
-	//MyJSONTableHead = "[";
-    //MyJSONTable = MyJSONTableHead + "{";
-	MyJSONTable = "[";
+    MyJSONTable = "[";
 
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen 
 
@@ -697,8 +695,8 @@ function MakeJSONTable() {
 			MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "\",";
         };
 		
-		//Jetzt das letzte Komma wegtrimmen
-		MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);	
+	//Jetzt das letzte Komma wegtrimmen
+	MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);	
 		
         MyJSONTable = MyJSONTable + "},";
     };
