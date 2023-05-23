@@ -1,4 +1,4 @@
-const Version = "1.8.5"; // Batterieüberwachungsskript Stand 06.12.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.6"; // Batterieüberwachungsskript Stand 23.05.2023 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -383,11 +383,13 @@ function CheckNextLowBatt() { //Ermittelt die Batterie mit der geringsten Spannu
     let LowestBattProz = 100; //Mit 100% initialisieren
     let LowestBattIndex = 0;
     for (let x = 0; x < Sensor.length; x++) { //Alle Sensoren durchlaufen
-        if (Sensor[x].state != "warn" && Sensor[x].state != "dead") Sensor[x].state = "ok";
-        if (Sensor[x].value > Sensor[x].batteryMinLimit) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
-            if (Sensor[x].liveProz <= LowestBattProz) { //Wenn Sensorwert kleiner LowestBattProz, LowestBattVal auf neuen Wert setzen um das Gerät mit den wenigsten Prozent zu ermitteln
-                LowestBattProz = Sensor[x].liveProz;
-                LowestBattIndex = x;
+        if (Sensor[x].state != "warn" && Sensor[x].state != "dead") { // Nur Sensoren berücksichtigen die nicht den Status warn oder dead haben
+            Sensor[x].state = "ok";
+            if (Sensor[x].value > Sensor[x].batteryMinLimit) { // Nur Sensoren berücksichtigen die das min Limit noch nicht unterschritten haben
+                if (Sensor[x].liveProz <= LowestBattProz) { //Wenn Sensorwert kleiner LowestBattProz, LowestBattVal auf neuen Wert setzen um das Gerät mit den wenigsten Prozent zu ermitteln
+                    LowestBattProz = Sensor[x].liveProz;
+                    LowestBattIndex = x;
+		}
             };
         };
     };
