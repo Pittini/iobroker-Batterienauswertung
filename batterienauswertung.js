@@ -1,4 +1,4 @@
-const Version = "1.8.5"; // Batterieüberwachungsskript Stand 06.12.2021 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.6"; // Batterieüberwachungsskript Stand 03.05.2025 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -217,6 +217,13 @@ function MainCalc(TempVal, counter) {
                     };
 
                     break;
+
+                    case "mV": //Sensorval is in mV angegben statt V
+                    Sensor[counter].value = TempVal/1000; //Spannung ist Wert vom DP
+                    Sensor[counter].uProz = Sensor[counter].value / Sensor[counter].uMax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
+                    Sensor[counter].liveProz = (Sensor[counter].value - Sensor[counter].batteryMinLimit) / (Sensor[counter].uMax - Sensor[counter].batteryMinLimit) * 100; //Restlebensdauer in % ermitteln
+
+                    break;
                 default: // In allen anderen Fällen
                     Sensor[counter].value = TempVal; //Spannung ist Wert vom DP
                     Sensor[counter].uProz = Sensor[counter].value / Sensor[counter].uMax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
@@ -364,7 +371,7 @@ function CheckDeadBatt() {
         if (x == Sensor.length - 1) { //Ausführung erst wenn Schleife komplett durch ist (async)
             setState(praefix + "DeadDeviceCount", DeadDeviceCount, true);
             MakeTable();
-	    MakeJSONTable();
+            MakeJSONTable();
         };
     };
 }
@@ -643,7 +650,7 @@ function MakeTable() {
 
 function MakeJSONTable() {
     if (logging) log("Reaching MakeJSONTable");
-  
+
     let MyJSONTable;
 
     MyJSONTable = "[";
@@ -655,55 +662,55 @@ function MakeJSONTable() {
             MyJSONTable += "\"lfd\":" + "\"" + (x + 1) + "\",";
         };
         if (TblJSNShowDeviceIDCol) {
-			MyJSONTable += "\"Sensor ID\":" + "\"" + GetParentId(Sensor[x].id) + "\",";
+            MyJSONTable += "\"Sensor ID\":" + "\"" + GetParentId(Sensor[x].id) + "\",";
         };
         if (TblJSNShowDeviceNameCol) {
-			MyJSONTable += "\"Sensor Name\":" + "\"" + GetName(x) + "\",";
+            MyJSONTable += "\"Sensor Name\":" + "\"" + GetName(x) + "\",";
         };
         if (TblJSNShowRoomCol) {
-			MyJSONTable += "\"Raum\":" + "\"" + GetRoom(x) + "\",";
+            MyJSONTable += "\"Raum\":" + "\"" + GetRoom(x) + "\",";
         };
         if (TblJSNShowUmaxCol) {
-			MyJSONTable += "\"U Nenn\":" + "\"" + Sensor[x].uMax.toFixed(1) + " V\",";
+            MyJSONTable += "\"U Nenn\":" + "\"" + Sensor[x].uMax.toFixed(1) + " V\",";
         };
         if (TblJSNShowUistCol) {
-			MyJSONTable += "\"U Ist\":" + "\"" + Sensor[x].value.toFixed(2) + " V\",";
+            MyJSONTable += "\"U Ist\":" + "\"" + Sensor[x].value.toFixed(2) + " V\",";
         };
         if (TblJSNShowUlimitCol) {
-			MyJSONTable += "\"U Limit\":" + "\"" + Sensor[x].batteryMinLimit.toFixed(2) + " V\",";
+            MyJSONTable += "\"U Limit\":" + "\"" + Sensor[x].batteryMinLimit.toFixed(2) + " V\",";
         };
         if (TblJSNShowProzbatCol) {
             if (typeof (Sensor[x].uProz) == "number") {
-				MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz.toFixed(1) + " %\",";
+                MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz.toFixed(1) + " %\",";
             }
             else {
-				MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz + "\",";
+                MyJSONTable += "\"%bat\":" + "\"" + Sensor[x].uProz + "\",";
             };
         };
         if (TblJSNShowProzliveCol) {
             if (typeof (Sensor[x].liveProz) == "number") {
-				MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz.toFixed(1) + " %\",";
+                MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz.toFixed(1) + " %\",";
             }
             else {
-				MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz + "\",";
+                MyJSONTable += "\"%live\":" + "\"" + Sensor[x].liveProz + "\",";
             };
         };
         if (TblJSNShowStatusCol) {
-			MyJSONTable += "\"Status\":" + "\"" + Sensor[x].state+ "\",";
+            MyJSONTable += "\"Status\":" + "\"" + Sensor[x].state + "\",";
         };
         if (TblJSNShowHasDeadCheck) {
-			MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "\",";
+            MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "\",";
         };
-		
-	//Jetzt das letzte Komma wegtrimmen
-	MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);	
-		
+
+        //Jetzt das letzte Komma wegtrimmen
+        MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length - 1);
+
         MyJSONTable = MyJSONTable + "},";
     };
-	
-	//Nochmal das letzte Komma wegtrimmen
-	MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length-1);
-	
+
+    //Nochmal das letzte Komma wegtrimmen
+    MyJSONTable = MyJSONTable.substring(0, MyJSONTable.length - 1);
+
     MyJSONTable += "]";
     setState(praefix + "JSONTable", MyJSONTable, true);
 }
