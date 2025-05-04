@@ -100,6 +100,8 @@ Es besteht aus drei einfachen Basiswidgets welche vorkonfiguriert wurden und die
 
 
 # Changelog
+#### 04.05.25 (1.8.7)
+Add: Channel hinzugefügt um für jedes Gerät das DAtum des letzten Batteriewechsels (oder einen anderen Kommentar) hinzufügen zu können. Wird in der Tabelle mit angezeigt.
 #### 03.05.25 (1.8.6)
 * Add: Zusätzliche Abfrage integriert um auch mit den Millivolt Angaben des 2er Zigbee Adapters klarzukommen
 #### 06.12.21 (1.8.5)

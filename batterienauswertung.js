@@ -1,4 +1,4 @@
-const Version = "1.8.6"; // Batterieüberwachungsskript Stand 03.05.2025 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
+const Version = "1.8.7"; // Batterieüberwachungsskript Stand 04.05.2025 - Git: https://github.com/Pittini/iobroker-Batterienauswertung - Forum: https://forum.iobroker.net/topic/31676/vorlage-generische-batteriestandsüberwachung-vis-ausgabe
 //Überwacht Batteriespannungen beliebig vieler Geräte 
 log("starting Batterieüberwachung V." + Version);
 //WICHTIG!!!
@@ -58,6 +58,7 @@ const TblShowProzbatCol = true; //Tabellenspalte mit Batteriestand in Prozent an
 const TblShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Berücksichtigung der Limitspannung in Prozent anzeigen? Beispiel: Batterie hat 3V Nennspannung, Limit ist bei 2V, aktueller Batteriestand ist 2.5V, dann wäre die Restlebensdauer 50%
 const TblShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
 const TblShowHasDeadCheck = true; //Tabellenspalte mit DeadCheckstatus ausgeben?
+const TblShowLastBatteryChange = true; //Tabellenspalte mit Angabe des letzten Batteriewechsels ausgeben
 
 //Spalten der JSON Tabellen bei Bedarf ausschalten
 const TblJSNShowLfdCol = true; //Tabellenspalte mit laufender Nummer anzeigen?
@@ -71,6 +72,8 @@ const TblJSNShowProzbatCol = true; //Tabellenspalte mit Batteriestand in Prozent
 const TblJSNShowProzliveCol = true; //Tabellenspalte mit Restlebensdauer unter Berücksichtigung der Limitspannung in Prozent anzeigen? Beispiel: Batterie hat 3V Nennspannung, Limit ist bei 2V, aktueller Batteriestand ist 2.5V, dann wäre die Restlebensdauer 50%
 const TblJSNShowStatusCol = true; //Tabellenspalte mit Status ausgeben?
 const TblJSNShowHasDeadCheck = true; //Tabellenspalte mit DeadCheckstatus ausgeben?
+const TblJSNShowLastBatteryChange = true; //Tabellenspalte mit Angabe des letzten Batteriewechsels ausgeben
+
 
 //Ab hier nix mehr ändern
 /** @type {{ id: string, initial: any, forceCreation: boolean, common: iobJS.StateCommon }[]} */
@@ -115,6 +118,10 @@ DpCount++;
 States[DpCount] = { id: praefix + "DeviceCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der überwachten Geräte", type: "number", role: "state", def: 0 } }; //
 DpCount++;
 States[DpCount] = { id: praefix + "DeadCheckCount", initial: 0, forceCreation: false, common: { read: true, write: false, name: "Zähler für Anzahl der gesetzten DeadChecks", type: "number", role: "state", def: 0 } }; //
+
+
+setObject(praefix + "Batteriewechseldaten", { type: 'channel', common: { name: "Channel für Eingabe der Batteriewechseldaten" }, native: {} }); //Channel für Batteriewechseldaten erstellen
+
 
 //Alle States anlegen, Main aufrufen wenn fertig
 let numStates = States.length;
@@ -170,11 +177,14 @@ function Init() {
                     if (logging) log("Tempval=" + TempVal + " TempUnit=" + TempUnit + " TypeOf=" + typeof (TempVal));
                     Sensor[counter].uMax = Umax; //Synchrones UmaxArray füllen
                     Sensor[counter].batteryMinLimit = BattMinLimitTemp;
+                    Sensor[counter].lastBatteryChange = GetCreateBatteryInfo(counter);
 
                     MainCalc(TempVal, counter)
 
                     if (Sensor[counter].liveProz > 100) Sensor[counter].liveProz = 100; //Um bei übervollen Batterien mehr als 100% live zu vermeiden
                     if (logging) log(counter + " " + Funktion + ' found at ' + members[y] + " Umax= " + Sensor[counter].uMax + " BattMinLimit=" + BattMinLimitTemp + " Val= " + Sensor[counter].value + " SensorProzent= " + Sensor[counter].uProz);
+
+
                     counter++;
                 };
                 setState(praefix + "DeviceCount", counter, true);
@@ -182,6 +192,28 @@ function Init() {
         };
     };
 }
+
+function GetCreateBatteryInfo(x) {
+    let dummy = "";
+    let tempName = getObject(GetParentId(Sensor[x].id), "common").common.name;
+    if (typeof tempName == "object") tempName = tempName.de;
+    tempName = tempName.replace(/'/g, "");
+    tempName = tempName.replace(/ /g, "_");
+
+    if (existsState(praefix + "Batteriewechseldaten." + tempName)) {
+        dummy = getState(praefix + "Batteriewechseldaten." + tempName).val;
+    } else {
+        createState(praefix + "Batteriewechseldaten." + tempName, "", false, { read: true, write: true, name: GetParentId(Sensor[x].id), type: "string", role: "text", def: "" }); //
+    };
+
+    if (dummy == null) {
+        dummy = "";
+        log(tempName + " " + dummy);
+    };
+    return dummy
+};
+
+
 
 function MainCalc(TempVal, counter) {
     if (logging) log("Reaching MainCalc, TempVal=" + TempVal + " counter=" + counter);
@@ -218,8 +250,8 @@ function MainCalc(TempVal, counter) {
 
                     break;
 
-                    case "mV": //Sensorval is in mV angegben statt V
-                    Sensor[counter].value = TempVal/1000; //Spannung ist Wert vom DP
+                case "mV": //Sensorval is in mV angegben statt V
+                    Sensor[counter].value = TempVal / 1000; //Spannung ist Wert vom DP
                     Sensor[counter].uProz = Sensor[counter].value / Sensor[counter].uMax * 100; //Prozentwerte aus Umax und Sensorwert errechnen
                     Sensor[counter].liveProz = (Sensor[counter].value - Sensor[counter].batteryMinLimit) / (Sensor[counter].uMax - Sensor[counter].batteryMinLimit) * 100; //Restlebensdauer in % ermitteln
 
@@ -330,7 +362,6 @@ function CheckDeadBatt() {
             let ParentDeviceId = GetParentId(Sensor[x].id);
             Sensor[x].isDead = false;
             Sensor[x].hasDeadCheck = false;
-
             //Check at Extra Function Datapoint DeadCheck
             for (let z in members) {
                 if (members[z].includes(ParentDeviceId)) {    //Jetzt prüfen ob Funktion DeadCheck innerhalb des Channels
@@ -348,6 +379,7 @@ function CheckDeadBatt() {
                 };
             };
             setState(praefix + "DeadCheckCount", counter, true);
+            Sensor[x].lastBatteryChange = GetCreateBatteryInfo(x);
 
             //Reaction after checks
             if (Sensor[x].isDead) {
@@ -514,6 +546,7 @@ function GetUnit(x) {
 function GetName(x) {
     let tempName = getObject(GetParentId(Sensor[x].id), "common").common.name;
     if (typeof tempName == "object") tempName = tempName.de;
+    tempName = tempName.replace(/'/g, "")
     return tempName;
 }
 
@@ -577,6 +610,10 @@ function MakeTable() {
     if (TblShowHasDeadCheck) {
         MyTableHead += "<th " + headstyle1 + HeadBgColor + "'>DC</th>";
     };
+    if (TblShowLastBatteryChange) {
+        MyTableHead += "<th " + headstyle1 + HeadBgColor + "'>Letzter Wechsel</th>";
+    };
+
     MyTableHead += "</tr>";
     MyTable = MyTableHead + "<tr>";
 
@@ -641,6 +678,10 @@ function MakeTable() {
         if (TblShowHasDeadCheck) {
             MyTable += "<td " + style1 + BgColor + "'>" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "</td>";
         };
+        if (TblShowLastBatteryChange) {
+            MyTable += "<td " + style1 + BgColor + "'>" + (Sensor[x].lastBatteryChange) + "</td>";
+        };
+
         MyTable = MyTable + "</tr>";
     };
 
@@ -700,6 +741,9 @@ function MakeJSONTable() {
         };
         if (TblJSNShowHasDeadCheck) {
             MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].hasDeadCheck ? 'x' : '-') + "\",";
+        };
+        if (TblJSNShowLastBatteryChange) {
+            MyJSONTable += "\"DC\":" + "\"" + (Sensor[x].lastBatteryChange ? 'x' : '-') + "\",";
         };
 
         //Jetzt das letzte Komma wegtrimmen
